@@ -1,7 +1,0 @@
-# Wokwi simulation config for Node A. Points the Wokwi VS Code extension / CLI at the
-# PlatformIO build output. Build first with `pio run` from firmware/node_a, then open this
-# folder's diagram.json in the Wokwi extension (or `wokwi-cli` if you have a token).
-[wokwi]
-version = 1
-firmware = '../../../firmware/node_a/.pio/build/esp32dev/firmware.bin'
-elf = '../../../firmware/node_a/.pio/build/esp32dev/firmware.elf'
