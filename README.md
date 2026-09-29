@@ -81,14 +81,26 @@ tools/              misc scripts
 
 ### Firmware
 ```
-cd firmware/node_a && pio run       # build Node A
-cd firmware/node_b && pio run       # build Node B
+cd firmware/node_a && cp include/secrets.h.example include/secrets.h  # fill in real values
+pio run       # build Node A
+cd firmware/node_b && cp include/secrets.h.example include/secrets.h
+pio run       # build Node B
 ```
-**Not yet run in this environment** — PlatformIO is not installed here yet. Marked untested until
-verified.
+**Verified:** both build cleanly with PlatformIO (`espressif32`/Arduino framework) —
+RAM ~14%, Flash ~59–60% of an ESP32's budget, no compile or link errors. Not yet flashed to real
+hardware or run in Wokwi — that's still pending (see checklist).
+
+The pure control-logic functions are also unit-tested independently of the ESP32 toolchain:
+```
+cd firmware/node_a/test && g++ -std=c++17 -I../src test_control_logic.cpp ../src/control_logic.cpp -o /tmp/test_a && /tmp/test_a
+cd firmware/node_b/test && g++ -std=c++17 -I../src test_control_logic.cpp ../src/control_logic.cpp -o /tmp/test_b && /tmp/test_b
+```
+**Verified:** both suites pass (7 and 9 assertions respectively, see terminal output when run).
 
 ### Wokwi simulation
-See `sim/README.md`.
+See `sim/README.md`. **Not yet verified** — the diagram files are written but haven't been opened
+in Wokwi yet; that's explicitly flagged there, including an open question about whether Wokwi can
+simulate ESP-NOW between two independent node projects (relevant for phase 2, not phase 1).
 
 ### Dashboard / logger
 Not yet implemented — next session. Will document here once built.
@@ -96,14 +108,18 @@ Not yet implemented — next session. Will document here once built.
 ## Progress checklist
 
 - [x] Repo scaffold, `.gitignore`, docs stubs
-- [ ] `docs/protocol.md` — message schema
-- [ ] `firmware/common/` — protocol (de)serialization, HMAC, transport interface
-- [ ] Node A firmware
-- [ ] Node B firmware
-- [ ] Wokwi simulation verified end-to-end
+- [x] `docs/protocol.md` — message schema, HMAC algorithm with a Python-verified worked example
+- [x] `firmware/common/` — protocol (de)serialization, HMAC, transport interface + MQTT impl
+- [x] Node A firmware — builds clean with PlatformIO; control logic unit-tested natively
+- [x] Node B firmware — builds clean with PlatformIO; control logic unit-tested natively
+- [ ] Wokwi simulation verified end-to-end (diagrams written, not yet opened/run — see `sim/README.md`)
 - [ ] Dashboard
 - [ ] Logger
 - [ ] OTA — explicitly out of scope for this submission (noted, not attempted)
+
+Not yet done, and known to be needed before this is demo-ready: flashing/testing on real
+hardware (arrives Wednesday), running the Wokwi simulation to confirm the diagrams actually work,
+and everything platform-side (dashboard + logger), which is next session's work.
 
 ## Author
 
