@@ -53,25 +53,6 @@ the cost of the dashboard's view of Node B depending on Node A being alive. The 
 therefore distinguishes "Node B is offline" from "the gateway is offline" — it can, because
 Node A reports the health of its radio link to B separately from its own.
 
-## Open design decisions
-
-Listed here rather than quietly defaulted, because these are the questions an evaluator is most
-likely to ask. Each one gets resolved and justified in `docs/decisions.md` before the
-corresponding code is written.
-
-1. **What the servo physically does, and its safe state.** Barrier, latch or indicator flag? And
-   on loss of the peer link: *fail-secure* (closed — protects the perimeter, traps whoever is
-   inside) or *fail-safe* (open — prioritizes egress)? Both are defensible; neither is defensible
-   without an argument. **Unresolved.**
-2. **Alarm escalation rules.** Does PIR motion alone arm the buzzer, or only motion followed by a
-   confirmed distance reading? How long does the alert level stay raised after motion clears?
-   **Unresolved.**
-3. **Buzzer stop policy.** An isolated node must never be able to leave the buzzer sounding with
-   no way to silence it remotely, so `alarm_duration_s` is enforced locally regardless of link
-   state. The remaining question is whether a re-trigger during an active alarm restarts the
-   timer. **Partially resolved.**
-4. **Distance threshold semantics.** Fixed threshold, or learned baseline with a deviation band
-   (more robust to a sensor pointed at a wall at an arbitrary distance)? **Unresolved.**
 
 ## Architecture (summary)
 
@@ -96,16 +77,6 @@ corresponding code is written.
                          └─ logger:    telemetry / commands / acks → SQLite
 ```
 
-**Two representations, one per layer.** The nRF24L01+ caps payloads at 32 bytes, so JSON does not
-fit: the radio link carries packed binary frames and the gateway translates to JSON for MQTT.
-That is the design, not a workaround — compact on the constrained link, readable on the
-supervisory one.
-
-**Two levels of acknowledgement.** The radio's Enhanced ShockBurst gives a hardware ACK and
-automatic retransmission, which proves the bytes reached the peer's radio. Mandatory constraint #6
-asks for something else: confirmation of *reception and execution*, with the dashboard showing the
-state the node reports rather than the command that was sent. So there is also an application-level
-ACK carrying `cmd_id`, a result code, and the value actually in effect after validation.
 
 Full diagram and data flow: `docs/architecture.md`. Message schema and frame layout:
 `docs/protocol.md`. Rationale for every choice: `docs/decisions.md`.
@@ -119,80 +90,16 @@ firmware/node_a/    Node A — PlatformIO, ESP32, Arduino framework, C++
 firmware/node_b/    Node B — Teensy 4.1, C++
 firmware/host/      native build: both nodes as Linux processes against mock hardware
 platform/           Flask + Flask-SocketIO dashboard and SQLite logger
-sim/                simulation notes and any Wokwi project files
-tools/              misc scripts
+diagrams/           Electronic connection
 ```
 
 ## How to run it
 
-### Host simulation — the primary path until the hardware arrives
-
-Wokwi does not simulate the Teensy 4.1 or the nRF24L01+, so it cannot host this system. Instead,
-all sensor reads and actuator writes go through an interface with two implementations: the real
-one per board, and a **mock** used by a native Linux build. Both node firmwares then compile and
-run as ordinary processes on the development machine, with a local-socket transport standing in
-for the radio.
-
-This is the same hardware-abstraction pattern I used on a previous project to drive an FPGA over
-SPI with a mock for simulation. It is also why the transport abstraction exists at all — it is
-load-bearing here, not speculative architecture.
-
-Prerequisites, once the code exists:
-- MQTT broker for the platform side:
-  `docker run -it -p 1883:1883 -p 9001:9001 eclipse-mosquitto` (needs a `mosquitto.conf` enabling
-  the websocket listener on 9001).
-- A C++ toolchain for the host build; PlatformIO for the board builds.
-
-**Not yet runnable** — see the checklist.
-
-### Wokwi
-
-Optional and limited: it can run the Node A (ESP32) firmware in isolation to exercise the Wi-Fi
-and MQTT path, but not the radio link and not Node B. Notes in `sim/README.md`.
-
-### Firmware on hardware
-
-A first pass was written and verified to build, then scrapped: it moved too fast and added
-complexity that was not understood line by line as it went in. It is being rebuilt incrementally.
-
-Note on the features that were in that pass: message authentication and replay protection **are**
-now part of the specification in `docs/protocol.md`, deliberately and with a stated reason. The
-difference is ordering — the plain link works and is demonstrated first, and the MAC goes on top
-of a system that already runs.
-
+Not yet defined. Will be here ...
 ### Dashboard / logger
 
 Not yet implemented. Will document here once built.
 
-## Hardware notes
 
-Two cautions recorded here because both cause damage or hard-to-diagnose failures:
 
-- **The HC-SR04 echo pin outputs 5 V and the Teensy 4.1 is not 5 V tolerant.** Its pins are 3.3 V
-  only. The echo line goes through a resistor divider (1 kΩ / 2 kΩ) or a level shifter.
-- **The nRF24L01+ browns out** on a dev board's 3.3 V rail because transmit current peaks above
-  what the regulator supplies cleanly. 10 µF electrolytic plus 100 nF ceramic across VCC/GND, as
-  close to the module as possible.
-- Servo power comes from its own supply, never from an MCU pin, with grounds tied together.
 
-## Progress checklist
-
-- [x] Repo scaffold, `.gitignore`, docs stubs
-- [x] `docs/protocol.md` — frame layout, message types, variable map
-- [ ] Resolve open design decisions #1, #2 and #4 → `docs/decisions.md`
-- [ ] `firmware/common/` — protocol (de)serialization, rebuilt incrementally
-- [ ] Mock hardware layer + native host build for both nodes
-- [ ] Node A firmware (ESP32): PIR, servo, radio, Wi-Fi gateway
-- [ ] Node B firmware (Teensy 4.1): ultrasonic, buzzer, radio
-- [ ] Radio link verified on real hardware
-- [ ] Heartbeat, peer-loss detection and safe states verified
-- [ ] Application-level command ACK with reported-state display
-- [ ] Dashboard (Flask + SocketIO), per-node and broadcast commands
-- [ ] Logger → SQLite
-- [ ] Message authentication (HMAC) — added once the plain path is demonstrated
-- [ ] OTA — explicitly out of scope for this submission (noted, not attempted)
-
-## Author
-
-Hugo — built for a live technical evaluation. Every library and pattern used is explained inline
-or in `docs/decisions.md` so it can be defended in front of evaluators.
