@@ -1,0 +1,38 @@
+# --- PlatformIO / firmware build artifacts ---
+.pio/
+.pioenvs/
+.piolibdeps/
+firmware/**/.pio/
+
+# --- Secrets: never commit real Wi-Fi/broker credentials or the HMAC key ---
+# Each node ships a secrets.h.example that IS committed; the real secrets.h is not.
+firmware/**/include/secrets.h
+platform/**/.env
+.env
+*.pem
+*.key
+
+# --- Editor / IDE ---
+.vscode/
+*.code-workspace
+.idea/
+
+# --- Python (logger, tooling scripts) ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# --- Logger output data (local runtime state, not source) ---
+platform/logger/*.db
+platform/logger/*.sqlite
+platform/logger/*.csv
+*.log
+
+# --- OS cruft ---
+.DS_Store
+Thumbs.db
+
+# --- Wokwi local state (keep diagram.json and wokwi.toml, drop caches) ---
+sim/**/.wokwi/
