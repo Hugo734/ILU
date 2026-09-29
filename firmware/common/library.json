@@ -1,0 +1,11 @@
+{
+  "name": "greenhouse_common",
+  "version": "0.1.0",
+  "description": "Shared protocol serialization, HMAC signing, and transport interface for Node A and Node B (IoT dual-node challenge)",
+  "dependencies": {
+    "bblanchon/ArduinoJson": "^7.0.0",
+    "knolleary/PubSubClient": "^2.8"
+  },
+  "frameworks": ["arduino"],
+  "platforms": ["espressif32"]
+}
