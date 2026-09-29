@@ -1,0 +1,5 @@
+# Wokwi simulation config for Node B. See sim/wokwi/node_a/wokwi.toml for the same notes.
+[wokwi]
+version = 1
+firmware = '../../../firmware/node_b/.pio/build/esp32dev/firmware.bin'
+elf = '../../../firmware/node_b/.pio/build/esp32dev/firmware.elf'
