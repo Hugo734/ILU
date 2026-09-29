@@ -80,22 +80,10 @@ tools/              misc scripts
 - PlatformIO (`pip install platformio` or the VS Code extension) to build/flash the firmware.
 
 ### Firmware
-```
-cd firmware/node_a && cp include/secrets.h.example include/secrets.h  # fill in real values
-pio run       # build Node A
-cd firmware/node_b && cp include/secrets.h.example include/secrets.h
-pio run       # build Node B
-```
-**Verified:** both build cleanly with PlatformIO (`espressif32`/Arduino framework) —
-RAM ~14%, Flash ~59–60% of an ESP32's budget, no compile or link errors. Not yet flashed to real
-hardware or run in Wokwi — that's still pending (see checklist).
-
-The pure control-logic functions are also unit-tested independently of the ESP32 toolchain:
-```
-cd firmware/node_a/test && g++ -std=c++17 -I../src test_control_logic.cpp ../src/control_logic.cpp -o /tmp/test_a && /tmp/test_a
-cd firmware/node_b/test && g++ -std=c++17 -I../src test_control_logic.cpp ../src/control_logic.cpp -o /tmp/test_b && /tmp/test_b
-```
-**Verified:** both suites pass (7 and 9 assertions respectively, see terminal output when run).
+Being rebuilt from scratch, incrementally, step by step — a first pass was written and verified
+to build, then scrapped because it moved too fast and added complexity (HMAC signing, a full
+transport abstraction, replay protection) that wasn't asked for and wasn't understood line by
+line as it went in. This section will fill back in as the rebuild progresses.
 
 ### Wokwi simulation
 See `sim/README.md`. **Not yet verified** — the diagram files are written but haven't been opened
@@ -109,17 +97,13 @@ Not yet implemented — next session. Will document here once built.
 
 - [x] Repo scaffold, `.gitignore`, docs stubs
 - [x] `docs/protocol.md` — message schema, HMAC algorithm with a Python-verified worked example
-- [x] `firmware/common/` — protocol (de)serialization, HMAC, transport interface + MQTT impl
-- [x] Node A firmware — builds clean with PlatformIO; control logic unit-tested natively
-- [x] Node B firmware — builds clean with PlatformIO; control logic unit-tested natively
-- [ ] Wokwi simulation verified end-to-end (diagrams written, not yet opened/run — see `sim/README.md`)
+- [ ] `firmware/common/` — being rebuilt incrementally, together, in smaller pieces
+- [ ] Node A firmware
+- [ ] Node B firmware
+- [ ] Wokwi simulation verified end-to-end
 - [ ] Dashboard
 - [ ] Logger
 - [ ] OTA — explicitly out of scope for this submission (noted, not attempted)
-
-Not yet done, and known to be needed before this is demo-ready: flashing/testing on real
-hardware (arrives Wednesday), running the Wokwi simulation to confirm the diagrams actually work,
-and everything platform-side (dashboard + logger), which is next session's work.
 
 ## Author
 
