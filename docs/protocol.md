@@ -85,9 +85,10 @@ the JS dashboard so all three sides compute the same thing.
 
    where `data_json` is `data` serialized as **compact JSON with keys sorted alphabetically**
    (e.g. Python: `json.dumps(data, sort_keys=True, separators=(",", ":"))`). Sorting keys is what
-   makes this reproducible without needing a canonical-JSON library on the ESP32 — the firmware
-   builds `data`'s keys in alphabetical order in the first place, so no re-sorting step is needed
-   there at all.
+   makes this reproducible without needing a canonical-JSON library on the ESP32. The firmware
+   sorts `data`'s top-level keys in code before hashing (`buildSigningString()` in
+   `firmware/common/src/protocol.cpp`) rather than relying on call sites always inserting keys
+   alphabetically — a discipline that's one typo away from silently breaking every signature.
 
 2. `sig = hex(HMAC-SHA256(key=shared_secret, message=to_sign))[:16]`.
 
@@ -170,10 +171,30 @@ when `result != "applied"` (e.g. `"unknown variable"`, `"out of range"`, `"bad s
 Both nodes subscribe to `events` directly — this is what makes requirement 3 (node-to-node
 interaction without the platform) true even with the dashboard closed.
 
+**Republishing, not edge-triggering:** both `climate_alert` and `irrigating` are republished on
+every control cycle for as long as the condition holds (not sent once on the rising edge). The
+receiving node treats the condition as active until ~10 s pass without a fresh event ("stale"),
+then clears it — this is simpler than defining a second "condition cleared" event type, at the
+cost of a small tail where the effect lingers slightly after the cause stops. Known limitation:
+this assumes the sender's `sample_period_ms` stays well under the 10 s staleness window; pushing
+it much higher via a command would make the receiver's flag clear too early. Acceptable for a
+prototype; a production version would have the event payload carry the sender's own period so the
+receiver could size the staleness window dynamically instead of using a fixed constant.
+
 ## Sequence / replay handling
 
-Each receiver keeps `last_seq[src]` per source it cares about. A message is accepted only if
-`seq > last_seq[src]` (after signature verification passes); otherwise it's a duplicate or replay
-and is dropped silently (not acked, not acted on). `seq` resets to 0 on reboot, so `last_seq` is
-also reset whenever a node's `status` topic transitions offline→online, to avoid permanently
-rejecting a freshly-rebooted peer whose counter restarted below the old high-water mark.
+Strict `seq > last_seq[src]` enforcement (after signature verification passes) is applied only to
+`cmd` messages, where replaying a stale command would actually cause harm — e.g. a captured
+"set temp_setpoint=20" replayed after the operator changed it to 25 would silently revert a
+deliberate change. `hb` and `event` are deliberately *not* seq-gated: both are idempotent,
+level-style signals already designed to be republished every control cycle while their condition
+holds (see "Republishing, not edge-triggering" above), so replaying an old one just extends a
+liveness/condition signal slightly — a non-issue functionally, and gating them would introduce a
+reboot deadlock (a receiver that only trusts a fresh, higher `seq` can't distinguish "peer
+rebooted, counter restarted" from "replay attack" without a separate reset signal, and the
+heartbeat is exactly the message that would need to arrive to trigger that reset in the first
+place). Implemented in `firmware/node_a/src/main.cpp` / `firmware/node_b/src/main.cpp`'s
+`handleCmd()` via a per-node `lastSeqPlatform` counter. Known limitation: a dashboard session that
+restarts (its own `seq` resetting to 0) would have its first few commands rejected until its
+counter passes the node's high-water mark — acceptable for a prototype's command volume, and
+avoids the same reboot-deadlock problem the heartbeat case has.
