@@ -1,0 +1,71 @@
+Command: ninja flash
+[1/5] cd /home/champagnepapi/Documents/ILU/node_a/build/esp-idf/esptool_py && /home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python /home/champagnepapi/esp/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app /home/champagnepapi/Documents/ILU/node_a/build/partition_table/partition-table.bin /home/champagnepapi/Documents/ILU/node_a/build/node_a.bin
+node_a.bin binary size 0xb0760 bytes. Smallest app partition is 0x100000 bytes. 0x4f8a0 bytes (31%) free.
+[2/5] Performing build step for 'bootloader'
+[1/1] cd /home/champagnepapi/Documents/ILU/node_a/build/bootloader/esp-idf/esptool_py && /home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python /home/champagnepapi/esp/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 /home/champagnepapi/Documents/ILU/node_a/build/bootloader/bootloader.bin
+Bootloader binary size 0x6610 bytes. 0x9f0 bytes (9%) free.
+[3/5] No install step for 'bootloader'
+[4/5] Completed 'bootloader'
+[4/5] cd /home/champagnepapi/esp/esp-idf/components/esptool_py && /usr/local/bin/cmake -D IDF_PATH=/home/champagnepapi/esp/esp-idf -D "SERIAL_TOOL=/home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python;;/home/champagnepapi/esp/esp-idf/components/esptool_py/esptool/esptool.py;--chip;esp32" -D "SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args" -D WORKING_DIRECTORY=/home/champagnepapi/Documents/ILU/node_a/build -P /home/champagnepapi/esp/esp-idf/components/esptool_py/run_serial_tool.cmake
+esptool.py --chip esp32 -p /dev/ttyUSB1 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 4MB 0x1000 bootloader/bootloader.bin 0x10000 node_a.bin 0x8000 partition_table/partition-table.bin
+esptool.py v4.12.0
+Serial port /dev/ttyUSB1
+Connecting.....
+Chip is ESP32-D0WD-V3 (revision v3.1)
+Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None
+Crystal is 40MHz
+MAC: 78:42:1c:68:44:98
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00001000 to 0x00007fff...
+Flash will be erased from 0x00010000 to 0x000c0fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+SHA digest in image updated
+Compressed 26128 bytes to 16494...
+Writing at 0x00001000... (50 %)
+Writing at 0x00007577... (100 %)
+Wrote 26128 bytes (16494 compressed) at 0x00001000 in 0.7 seconds (effective 302.0 kbit/s)...
+Hash of data verified.
+Compressed 722784 bytes to 459725...
+Writing at 0x00010000... (3 %)
+Writing at 0x0001bca5... (6 %)
+Writing at 0x000241a1... (10 %)
+Writing at 0x0002e32e... (13 %)
+Writing at 0x00033d29... (17 %)
+Writing at 0x00039bdc... (20 %)
+Writing at 0x0003f8d1... (24 %)
+Writing at 0x000458b7... (27 %)
+Writing at 0x0004bd10... (31 %)
+Writing at 0x000518a8... (34 %)
+Writing at 0x00057038... (37 %)
+Writing at 0x0005c6dd... (41 %)
+Writing at 0x00061da3... (44 %)
+Writing at 0x00067115... (48 %)
+Writing at 0x0006ce2a... (51 %)
+Writing at 0x00072e01... (55 %)
+Writing at 0x00078549... (58 %)
+Writing at 0x0007e12c... (62 %)
+Writing at 0x00083e2b... (65 %)
+Writing at 0x00089866... (68 %)
+Writing at 0x0008f76b... (72 %)
+Writing at 0x0009526f... (75 %)
+Writing at 0x0009abe9... (79 %)
+Writing at 0x000a33bc... (82 %)
+Writing at 0x000a9071... (86 %)
+Writing at 0x000aeede... (89 %)
+Writing at 0x000b4f8a... (93 %)
+Writing at 0x000ba6e0... (96 %)
+Writing at 0x000c00d4... (100 %)
+Wrote 722784 bytes (459725 compressed) at 0x00010000 in 10.4 seconds (effective 556.4 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 103...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (103 compressed) at 0x00008000 in 0.1 seconds (effective 491.3 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...

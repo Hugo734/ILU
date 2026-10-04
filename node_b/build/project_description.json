@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "node_b",
-    "project_version":    "de8c3a4-dirty",
+    "project_version":    "d1da3e7-dirty",
     "project_path":       "/home/champagnepapi/Documents/ILU/node_b",
     "idf_path":           "/home/champagnepapi/esp/esp-idf",
     "build_dir":          "/home/champagnepapi/Documents/ILU/node_b/build",

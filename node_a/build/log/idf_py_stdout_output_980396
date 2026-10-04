@@ -1,4 +1,5 @@
-Command: cmake -G Ninja -DPYTHON_DEPS_CHECKED=1 -DPYTHON=/home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python -DESP_PLATFORM=1 -DIDF_TARGET=esp32 -DCCACHE_ENABLE=0 /home/champagnepapi/Documents/ILU/node_a
+Command: cmake -G Ninja -DPYTHON_DEPS_CHECKED=1 -DPYTHON=/home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python -DESP_PLATFORM=1 -DCCACHE_ENABLE=0 /home/champagnepapi/Documents/ILU/node_a
+-- IDF_TARGET is not set, guessed 'esp32' from sdkconfig '/home/champagnepapi/Documents/ILU/node_a/sdkconfig'
 -- Found Git: /usr/bin/git (found version "2.34.1")
 -- Component directory /home/champagnepapi/esp/esp-idf/components/esp_blockdev does not contain a CMakeLists.txt file. No component will be added
 -- Minimal build - OFF
@@ -36,7 +37,7 @@ Loading defaults file /home/champagnepapi/Documents/ILU/node_a/sdkconfig.default
 -- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
 -- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS - Success
 -- USING O3
--- App "node_a" version: de8c3a4-dirty
+-- App "node_a" version: d1da3e7-dirty
 -- Adding linker script /home/champagnepapi/Documents/ILU/node_a/build/esp-idf/esp_system/ld/memory.ld
 -- Adding linker script /home/champagnepapi/Documents/ILU/node_a/build/esp-idf/esp_system/ld/sections.ld.in
 -- Adding linker script /home/champagnepapi/esp/esp-idf/components/esp_rom/esp32/ld/esp32.rom.ld
