@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "node_b",
-    "project_version":    "d1da3e7-dirty",
+    "project_version":    "1665dce-dirty",
     "project_path":       "/home/champagnepapi/Documents/ILU/node_b",
     "idf_path":           "/home/champagnepapi/esp/esp-idf",
     "build_dir":          "/home/champagnepapi/Documents/ILU/node_b/build",
@@ -1250,12 +1250,12 @@
             "dir": "/home/champagnepapi/Documents/ILU/node_b/main",
             "type": "LIBRARY",
             "lib": "__idf_main",
-            "reqs": [ "core", "net" ],
+            "reqs": [ "core", "driver", "esp_timer" ],
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "/home/champagnepapi/Documents/ILU/node_b/build/esp-idf/main/libmain.a",
-            "sources": [ "/home/champagnepapi/Documents/ILU/node_b/main/main.cpp" ],
+            "sources": [ "/home/champagnepapi/Documents/ILU/node_b/main/main.cpp", "/home/champagnepapi/Documents/ILU/node_b/main/hal_b_esp32.cpp" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {
@@ -2964,7 +2964,7 @@
             "prefix": "idf",
             "dir": "/home/champagnepapi/Documents/ILU/node_b/main",
             "lib": "__idf_main",
-            "reqs": [ "core", "net" ],
+            "reqs": [ "core", "driver", "esp_timer" ],
             "priv_reqs": [],
             "managed_reqs": [],
             "managed_priv_reqs": [],

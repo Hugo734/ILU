@@ -160,7 +160,6 @@
 /home/champagnepapi/Documents/ILU/node_b/build/esp-idf/wifi_provisioning/libwifi_provisioning.a
 /home/champagnepapi/Documents/ILU/node_b/build/esp-idf/json/libjson.a
 /home/champagnepapi/Documents/ILU/node_b/build/esp-idf/core/libcore.a
-/home/champagnepapi/Documents/ILU/node_b/build/esp-idf/net/libnet.a
-/home/champagnepapi/Documents/ILU/node_b/build/esp-idf/core/libcore.a
 /home/champagnepapi/Documents/ILU/node_b/build/esp-idf/main/libmain.a
+/home/champagnepapi/Documents/ILU/node_b/build/esp-idf/core/libcore.a
 /home/champagnepapi/Documents/ILU/node_b/build/esp-idf/net/libnet.a
