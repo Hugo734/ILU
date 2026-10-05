@@ -1,0 +1,85 @@
+Command: /home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python /home/champagnepapi/esp/esp-idf/tools/idf_monitor.py -p /dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /home/champagnepapi/Documents/ILU/node_b/build/node_b.elf /home/champagnepapi/Documents/ILU/node_b/build/bootloader/bootloader.elf -m '/home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python' '/home/champagnepapi/esp/esp-idf/tools/idf.py' '-C' 'node_b' '-p' '/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0'
+ition at offset 0x10000
+[0;32mI (161) boot: Disabling RNG early entropy source...[0m
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Oct  4 2026 10:58:42[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (33) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (37) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (44) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (77) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=0a1d0h ( 41424) map[0m
+[0;32mI (102) esp_image: segment 1: paddr=0001a1f8 vaddr=3ffb0000 size=0288ch ( 10380) load[0m
+[0;32mI (106) esp_image: segment 2: paddr=0001ca8c vaddr=40080000 size=0358ch ( 13708) load[0m
+[0;32mI (112) esp_image: segment 3: paddr=00020020 vaddr=400d0020 size=11d7ch ( 73084) map[0m
+[0;32mI (139) esp_image: segment 4: paddr=00031da4 vaddr=4008358c size=09b18h ( 39704) load[0m
+[0;32mI (154) esp_image: segment 5: paddr=0003b8c4 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (161) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (161) boot: Disabling RNG early entropy source...[0m
+[0;32mI (173) cpu_start: Multicore app[0m
+[0;32mI (181) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (181) cpu_start: Pro cpu start user code[0m
+[0;32mI (181) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (183) app_init: Application information:[0m
+[0;32mI (187) app_init: Project name:     node_b[0m
+[0;32mI (191) app_init: App version:      32c7f0d-dirty[0m
+[0;32mI (195) app_init: Compile time:     Oct  4 2026 21:58:00[0m
+[0;32mI (200) app_init: ELF file SHA256:  02bd23d4f...[0m
+[0;32mI (204) app_init: ESP-IDF:          v5.5.5[0m
+[0;32mI (208) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (212) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (216) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (220) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (226) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (231) heap_init: At 3FFB31B0 len 0002CE50 (179 KiB): DRAM[0m
+[0;32mI (236) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (242) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (247) heap_init: At 4008D0A4 len 00012F5C (75 KiB): IRAM[0m
+[0;32mI (254) spi_flash: detected chip: generic[0m
+[0;32mI (256) spi_flash: flash io: dio[0m
+[0;32mI (260) main_task: Started on CPU0[0m
+[0;32mI (262) main_task: Calling app_main()[0m
+[0;32mI (265) node_b: Nodo b | protocolo v1[0m
+[0;32mI (301) node_b: CERRADO      |   0 cm[0m
+[0;32mI (94161) node_b: ACCESO       |   0 cm[0m
+[0;32mI (97411) node_b: CERRADO      |   0 cm[0m
+[0;32mI (102741) node_b: ACCESO       |   0 cm[0m
+[0;32mI (105991) node_b: CERRADO      |   0 cm[0m
+[0;32mI (108331) node_b: ACCESO       |   0 cm[0m
+[0;32mI (111581) node_b: CERRADO      |   0 cm[0m
+[0;32mI (112751) node_b: ACCESO       |   0 cm[0m
+[0;32mI (116001) node_b: CERRADO      |   0 cm[0m
+[0;32mI (116911) node_b: ACCESO       |   0 cm[0m
+[0;32mI (120161) node_b: CERRADO      |   0 cm[0m
+[0;32mI (183051) node_b: ACERCANDOSE  |   8 cm[0m
+[0;32mI (183153) node_b: CERRADO      |   0 cm[0m
+[0;32mI (183591) node_b: ACERCANDOSE  |   8 cm[0m
+[0;32mI (183721) node_b: CERRADO      |   0 cm[0m
+[0;32mI (186831) node_b: ACERCANDOSE  |   7 cm[0m
+[0;32mI (186961) node_b: CERRADO      |   0 cm[0m
+[0;32mI (202477) node_b: ACCESO       |   0 cm[0m
+[0;32mI (205597) node_b: CERRADO      |   0 cm[0m
+[0;32mI (215151) node_b: ACERCANDOSE  |   3 cm[0m
+[0;32mI (215281) node_b: CERRADO      |   0 cm[0m
+[0;32mI (219329) node_b: ACCESO       |   0 cm[0m
+[0;32mI (222541) node_b: CERRADO      |   0 cm[0m
+[0;32mI (223831) node_b: ACERCANDOSE  |   7 cm[0m
+[0;32mI (223933) node_b: CERRADO      |   0 cm[0m

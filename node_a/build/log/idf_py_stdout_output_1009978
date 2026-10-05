@@ -1,0 +1,451 @@
+Command: /home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python /home/champagnepapi/esp/esp-idf/tools/idf_monitor.py -p /dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /home/champagnepapi/Documents/ILU/node_a/build/node_a.elf /home/champagnepapi/Documents/ILU/node_a/build/bootloader/bootloader.elf -m '/home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python' '/home/champagnepapi/esp/esp-idf/tools/idf.py' '-C' 'node_a' '-p' '/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0'
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Oct  4 2026 11:16:52[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (33) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (37) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (44) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (77) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=17da0h ( 97696) map[0m
+[0;32mI (121) esp_image: segment 1: paddr=00027dc8 vaddr=3ffb0000 size=04328h ( 17192) load[0m
+[0;32mI (128) esp_image: segment 2: paddr=0002c0f8 vaddr=40080000 size=03f20h ( 16160) load[0m
+[0;32mI (135) esp_image: segment 3: paddr=00030020 vaddr=400d0020 size=7f0a8h (520360) map[0m
+[0;32mI (313) esp_image: segment 4: paddr=000af0d0 vaddr=40083f20 size=13f8ch ( 81804) load[0m
+[0;32mI (345) esp_image: segment 5: paddr=000c3064 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (357) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (357) boot: Disabling RNG early entropy source...[0m
+[0;32mI (368) cpu_start: Multicore app[0m
+[0;32mI (376) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (376) cpu_start: Pro cpu start user code[0m
+[0;32mI (376) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (378) app_init: Application information:[0m
+[0;32mI (382) app_init: Project name:     node_a[0m
+[0;32mI (386) app_init: App version:      d1da3e7-dirty[0m
+[0;32mI (390) app_init: Compile time:     Oct  4 2026 11:16:48[0m
+[0;32mI (395) app_init: ELF file SHA256:  dcb8df26d...[0m
+[0;32mI (400) app_init: ESP-IDF:          v5.5.5[0m
+[0;32mI (403) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (407) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (411) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (415) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (421) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (426) heap_init: At 3FFB8680 len 00027980 (158 KiB): DRAM[0m
+[0;32mI (432) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (437) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (443) heap_init: At 40097EAC len 00008154 (32 KiB): IRAM[0m
+[0;32mI (449) spi_flash: detected chip: generic[0m
+[0;32mI (451) spi_flash: flash io: dio[0m
+[0;32mI (456) main_task: Started on CPU0[0m
+[0;32mI (458) main_task: Calling app_main()[0m
+[0;32mI (461) node_a: Nodo a | protocolo v1[0m
+[0;32mI (491) wifi:wifi driver task: 3ffc0250, prio:23, stack:6656, core=0[0m
+[0;32mI (505) wifi:wifi firmware version: b9f67df[0m
+[0;32mI (506) wifi:wifi certification version: v7.0[0m
+[0;32mI (506) wifi:config NVS flash: enabled[0m
+[0;32mI (506) wifi:config nano formatting: disabled[0m
+[0;32mI (511) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (515) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (519) wifi:Init management short buffer num: 32[0m
+[0;32mI (524) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (528) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (532) wifi:Init static rx buffer num: 10[0m
+[0;32mI (536) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (541) wifi_init: rx ba win: 6[0m
+[0;32mI (542) wifi_init: accept mbox: 6[0m
+[0;32mI (545) wifi_init: tcpip mbox: 32[0m
+[0;32mI (548) wifi_init: udp mbox: 6[0m
+[0;32mI (551) wifi_init: tcp mbox: 6[0m
+[0;32mI (554) wifi_init: tcp tx win: 5760[0m
+[0;32mI (557) wifi_init: tcp rx win: 5760[0m
+[0;32mI (560) wifi_init: tcp mss: 1440[0m
+[0;32mI (563) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (567) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (572) phy_init: phy_version 4863,a3a4459,Oct 28 2025,14:30:06[0m
+[0;32mI (649) wifi:mode : sta (f4:65:0b:c0:e0:a4)[0m
+[0;32mI (650) wifi:enable tsf[0m
+[0;32mI (651) net: Wi-Fi MAC address: f4:65:0b:c0:e0:a4[0m
+[0;32mI (653) ESPNOW: espnow [version: 2.0] init[0m
+[0;32mI (655) net: ESP-NOW ready | self A | peer 78:42:1c:68:44:98[0m
+[0;32mI (658) main_task: Returned from app_main()[0m
+[0;32mI (1276) net: RX 78:42:1c:68:44:98 | node B | counter 24 | uptime 24210 ms[0m
+[0;32mI (2276) net: RX 78:42:1c:68:44:98 | node B | counter 25 | uptime 25210 ms[0m
+[0;32mI (3276) net: RX 78:42:1c:68:44:98 | node B | counter 26 | uptime 26210 ms[0m
+[0;32mI (4276) net: RX 78:42:1c:68:44:98 | node B | counter 27 | uptime 27210 ms[0m
+[0;32mI (5276) net: RX 78:42:1c:68:44:98 | node B | counter 28 | uptime 28210 ms[0m
+[0;32mI (6277) net: RX 78:42:1c:68:44:98 | node B | counter 29 | uptime 29210 ms[0m
+[0;32mI (7276) net: RX 78:42:1c:68:44:98 | node B | counter 30 | uptime 30210 ms[0m
+[0;32mI (8276) net: RX 78:42:1c:68:44:98 | node B | counter 31 | uptime 31210 ms[0m
+[0;32mI (9276) net: RX 78:42:1c:68:44:98 | node B | counter 32 | uptime 32210 ms[0m
+[0;32mI (10276) net: RX 78:42:1c:68:44:98 | node B | counter 33 | uptime 33210 ms[0m
+[0;32mI (11276) net: RX 78:42:1c:68:44:98 | node B | counter 34 | uptime 34210 ms[0m
+[0;32mI (12276) net: RX 78:42:1c:68:44:98 | node B | counter 35 | uptime 35210 ms[0m
+[0;32mI (13276) net: RX 78:42:1c:68:44:98 | node B | counter 36 | uptime 36210 ms[0m
+[0;32mI (14276) net: RX 78:42:1c:68:44:98 | node B | counter 37 | uptime 37210 ms[0m
+[0;32mI (15276) net: RX 78:42:1c:68:44:98 | node B | counter 38 | uptime 38210 ms[0m
+[0;32mI (16276) net: RX 78:42:1c:68:44:98 | node B | counter 39 | uptime 39210 ms[0m
+[0;32mI (17277) net: RX 78:42:1c:68:44:98 | node B | counter 40 | uptime 40210 ms[0m
+[0;32mI (18276) net: RX 78:42:1c:68:44:98 | node B | counter 41 | uptime 41210 ms[0m
+[0;32mI (19276) net: RX 78:42:1c:68:44:98 | node B | counter 42 | uptime 42210 ms[0m
+[0;32mI (20276) net: RX 78:42:1c:68:44:98 | node B | counter 43 | uptime 43210 ms[0m
+[0;32mI (21276) net: RX 78:42:1c:68:44:98 | node B | counter 44 | uptime 44210 ms[0m
+[0;32mI (22275) net: RX 78:42:1c:68:44:98 | node B | counter 45 | uptime 45210 ms[0m
+[0;32mI (23275) net: RX 78:42:1c:68:44:98 | node B | counter 46 | uptime 46210 ms[0m
+[0;32mI (24275) net: RX 78:42:1c:68:44:98 | node B | counter 47 | uptime 47210 ms[0m
+[0;32mI (25275) net: RX 78:42:1c:68:44:98 | node B | counter 48 | uptime 48210 ms[0m
+[0;32mI (26275) net: RX 78:42:1c:68:44:98 | node B | counter 49 | uptime 49210 ms[0m
+[0;32mI (27275) net: RX 78:42:1c:68:44:98 | node B | counter 50 | uptime 50210 ms[0m
+[0;32mI (28275) net: RX 78:42:1c:68:44:98 | node B | counter 51 | uptime 51210 ms[0m
+[0;32mI (29275) net: RX 78:42:1c:68:44:98 | node B | counter 52 | uptime 52210 ms[0m
+[0;32mI (30282) net: RX 78:42:1c:68:44:98 | node B | counter 53 | uptime 53210 ms[0m
+[0;32mI (31275) net: RX 78:42:1c:68:44:98 | node B | counter 54 | uptime 54210 ms[0m
+[0;32mI (32275) net: RX 78:42:1c:68:44:98 | node B | counter 55 | uptime 55210 ms[0m
+[0;32mI (33276) net: RX 78:42:1c:68:44:98 | node B | counter 56 | uptime 56210 ms[0m
+[0;32mI (34276) net: RX 78:42:1c:68:44:98 | node B | counter 57 | uptime 57210 ms[0m
+[0;32mI (35275) net: RX 78:42:1c:68:44:98 | node B | counter 58 | uptime 58210 ms[0m
+[0;32mI (36275) net: RX 78:42:1c:68:44:98 | node B | counter 59 | uptime 59210 ms[0m
+[0;32mI (37275) net: RX 78:42:1c:68:44:98 | node B | counter 60 | uptime 60210 ms[0m
+[0;32mI (38275) net: RX 78:42:1c:68:44:98 | node B | counter 61 | uptime 61210 ms[0m
+[0;32mI (39275) net: RX 78:42:1c:68:44:98 | node B | counter 62 | uptime 62210 ms[0m
+[0;32mI (40275) net: RX 78:42:1c:68:44:98 | node B | counter 63 | uptime 63210 ms[0m
+[0;32mI (41275) net: RX 78:42:1c:68:44:98 | node B | counter 64 | uptime 64210 ms[0m
+[0;32mI (42275) net: RX 78:42:1c:68:44:98 | node B | counter 65 | uptime 65210 ms[0m
+[0;32mI (43275) net: RX 78:42:1c:68:44:98 | node B | counter 66 | uptime 66210 ms[0m
+[0;32mI (44275) net: RX 78:42:1c:68:44:98 | node B | counter 67 | uptime 67210 ms[0m
+[0;32mI (45275) net: RX 78:42:1c:68:44:98 | node B | counter 68 | uptime 68210 ms[0m
+[0;32mI (46275) net: RX 78:42:1c:68:44:98 | node B | counter 69 | uptime 69210 ms[0m
+[0;32mI (47275) net: RX 78:42:1c:68:44:98 | node B | counter 70 | uptime 70210 ms[0m
+[0;32mI (48275) net: RX 78:42:1c:68:44:98 | node B | counter 71 | uptime 71210 ms[0m
+[0;32mI (49275) net: RX 78:42:1c:68:44:98 | node B | counter 72 | uptime 72210 ms[0m
+[0;32mI (50275) net: RX 78:42:1c:68:44:98 | node B | counter 73 | uptime 73210 ms[0m
+[0;32mI (51275) net: RX 78:42:1c:68:44:98 | node B | counter 74 | uptime 74210 ms[0m
+[0;32mI (52278) net: RX 78:42:1c:68:44:98 | node B | counter 75 | uptime 75210 ms[0m
+[0;32mI (53275) net: RX 78:42:1c:68:44:98 | node B | counter 76 | uptime 76210 ms[0m
+[0;32mI (54275) net: RX 78:42:1c:68:44:98 | node B | counter 77 | uptime 77210 ms[0m
+[0;32mI (55275) net: RX 78:42:1c:68:44:98 | node B | counter 78 | uptime 78210 ms[0m
+[0;32mI (56275) net: RX 78:42:1c:68:44:98 | node B | counter 79 | uptime 79210 ms[0m
+[0;32mI (57275) net: RX 78:42:1c:68:44:98 | node B | counter 80 | uptime 80210 ms[0m
+[0;32mI (58274) net: RX 78:42:1c:68:44:98 | node B | counter 81 | uptime 81210 ms[0m
+[0;32mI (59274) net: RX 78:42:1c:68:44:98 | node B | counter 82 | uptime 82210 ms[0m
+[0;32mI (60274) net: RX 78:42:1c:68:44:98 | node B | counter 83 | uptime 83210 ms[0m
+[0;32mI (61274) net: RX 78:42:1c:68:44:98 | node B | counter 84 | uptime 84210 ms[0m
+[0;32mI (62274) net: RX 78:42:1c:68:44:98 | node B | counter 85 | uptime 85210 ms[0m
+[0;32mI (63274) net: RX 78:42:1c:68:44:98 | node B | counter 86 | uptime 86210 ms[0m
+[0;32mI (64275) net: RX 78:42:1c:68:44:98 | node B | counter 87 | uptime 87210 ms[0m
+[0;32mI (65274) net: RX 78:42:1c:68:44:98 | node B | counter 88 | uptime 88210 ms[0m
+[0;32mI (66274) net: RX 78:42:1c:68:44:98 | node B | counter 89 | uptime 89210 ms[0m
+[0;32mI (67274) net: RX 78:42:1c:68:44:98 | node B | counter 90 | uptime 90210 ms[0m
+[0;32mI (68274) net: RX 78:42:1c:68:44:98 | node B | counter 91 | uptime 91210 ms[0m
+[0;32mI (69277) net: RX 78:42:1c:68:44:98 | node B | counter 92 | uptime 92210 ms[0m
+[0;32mI (70275) net: RX 78:42:1c:68:44:98 | node B | counter 93 | uptime 93210 ms[0m
+[0;32mI (71274) net: RX 78:42:1c:68:44:98 | node B | counter 94 | uptime 94210 ms[0m
+[0;32mI (72277) net: RX 78:42:1c:68:44:98 | node B | counter 95 | uptime 95210 ms[0m
+[0;32mI (73274) net: RX 78:42:1c:68:44:98 | node B | counter 96 | uptime 96210 ms[0m
+[0;32mI (74279) net: RX 78:42:1c:68:44:98 | node B | counter 97 | uptime 97210 ms[0m
+[0;32mI (75274) net: RX 78:42:1c:68:44:98 | node B | counter 98 | uptime 98210 ms[0m
+[0;32mI (76276) net: RX 78:42:1c:68:44:98 | node B | counter 99 | uptime 99210 ms[0m
+[0;32mI (77274) net: RX 78:42:1c:68:44:98 | node B | counter 100 | uptime 100210 ms[0m
+[0;32mI (78274) net: RX 78:42:1c:68:44:98 | node B | counter 101 | uptime 101210 ms[0m
+[0;32mI (79274) net: RX 78:42:1c:68:44:98 | node B | counter 102 | uptime 102210 ms[0m
+[0;32mI (80274) net: RX 78:42:1c:68:44:98 | node B | counter 103 | uptime 103210 ms[0m
+[0;32mI (81278) net: RX 78:42:1c:68:44:98 | node B | counter 104 | uptime 104210 ms[0m
+[0;32mI (82274) net: RX 78:42:1c:68:44:98 | node B | counter 105 | uptime 105210 ms[0m
+[0;32mI (83274) net: RX 78:42:1c:68:44:98 | node B | counter 106 | uptime 106210 ms[0m
+[0;32mI (84276) net: RX 78:42:1c:68:44:98 | node B | counter 107 | uptime 107210 ms[0m
+[0;32mI (85274) net: RX 78:42:1c:68:44:98 | node B | counter 108 | uptime 108210 ms[0m
+[0;32mI (86275) net: RX 78:42:1c:68:44:98 | node B | counter 109 | uptime 109210 ms[0m
+[0;32mI (87274) net: RX 78:42:1c:68:44:98 | node B | counter 110 | uptime 110210 ms[0m
+[0;32mI (88274) net: RX 78:42:1c:68:44:98 | node B | counter 111 | uptime 111210 ms[0m
+[0;32mI (89274) net: RX 78:42:1c:68:44:98 | node B | counter 112 | uptime 112210 ms[0m
+[0;32mI (90278) net: RX 78:42:1c:68:44:98 | node B | counter 113 | uptime 113210 ms[0m
+[0;32mI (91274) net: RX 78:42:1c:68:44:98 | node B | counter 114 | uptime 114210 ms[0m
+[0;32mI (92273) net: RX 78:42:1c:68:44:98 | node B | counter 115 | uptime 115210 ms[0m
+[0;32mI (93273) net: RX 78:42:1c:68:44:98 | node B | counter 116 | uptime 116210 ms[0m
+[0;32mI (94273) net: RX 78:42:1c:68:44:98 | node B | counter 117 | uptime 117210 ms[0m
+[0;32mI (95273) net: RX 78:42:1c:68:44:98 | node B | counter 118 | uptime 118210 ms[0m
+[0;32mI (96273) net: RX 78:42:1c:68:44:98 | node B | counter 119 | uptime 119210 ms[0m
+[0;32mI (97274) net: RX 78:42:1c:68:44:98 | node B | counter 120 | uptime 120210 ms[0m
+[0;32mI (98273) net: RX 78:42:1c:68:44:98 | node B | counter 121 | uptime 121210 ms[0m
+[0;32mI (99273) net: RX 78:42:1c:68:44:98 | node B | counter 122 | uptime 122210 ms[0m
+[0;32mI (100273) net: RX 78:42:1c:68:44:98 | node B | counter 123 | uptime 123210 ms[0m
+[0;32mI (101275) net: RX 78:42:1c:68:44:98 | node B | counter 124 | uptime 124210 ms[0m
+[0;32mI (102273) net: RX 78:42:1c:68:44:98 | node B | counter 125 | uptime 125210 ms[0m
+[0;32mI (103274) net: RX 78:42:1c:68:44:98 | node B | counter 126 | uptime 126210 ms[0m
+[0;32mI (104273) net: RX 78:42:1c:68:44:98 | node B | counter 127 | uptime 127210 ms[0m
+[0;32mI (105273) net: RX 78:42:1c:68:44:98 | node B | counter 128 | uptime 128210 ms[0m
+[0;32mI (106273) net: RX 78:42:1c:68:44:98 | node B | counter 129 | uptime 129210 ms[0m
+[0;32mI (107273) net: RX 78:42:1c:68:44:98 | node B | counter 130 | uptime 130210 ms[0m
+[0;32mI (108273) net: RX 78:42:1c:68:44:98 | node B | counter 131 | uptime 131210 ms[0m
+[0;32mI (109273) net: RX 78:42:1c:68:44:98 | node B | counter 132 | uptime 132210 ms[0m
+[0;32mI (110273) net: RX 78:42:1c:68:44:98 | node B | counter 133 | uptime 133210 ms[0m
+[0;32mI (111273) net: RX 78:42:1c:68:44:98 | node B | counter 134 | uptime 134210 ms[0m
+[0;32mI (112273) net: RX 78:42:1c:68:44:98 | node B | counter 135 | uptime 135210 ms[0m
+[0;32mI (113273) net: RX 78:42:1c:68:44:98 | node B | counter 136 | uptime 136210 ms[0m
+[0;32mI (114274) net: RX 78:42:1c:68:44:98 | node B | counter 137 | uptime 137210 ms[0m
+[0;32mI (115275) net: RX 78:42:1c:68:44:98 | node B | counter 138 | uptime 138210 ms[0m
+[0;32mI (116273) net: RX 78:42:1c:68:44:98 | node B | counter 139 | uptime 139210 ms[0m
+[0;32mI (117273) net: RX 78:42:1c:68:44:98 | node B | counter 140 | uptime 140210 ms[0m
+[0;32mI (118273) net: RX 78:42:1c:68:44:98 | node B | counter 141 | uptime 141210 ms[0m
+[0;32mI (119273) net: RX 78:42:1c:68:44:98 | node B | counter 142 | uptime 142210 ms[0m
+[0;32mI (120273) net: RX 78:42:1c:68:44:98 | node B | counter 143 | uptime 143210 ms[0m
+[0;32mI (121273) net: RX 78:42:1c:68:44:98 | node B | counter 144 | uptime 144210 ms[0m
+[0;32mI (122273) net: RX 78:42:1c:68:44:98 | node B | counter 145 | uptime 145210 ms[0m
+[0;32mI (123273) net: RX 78:42:1c:68:44:98 | node B | counter 146 | uptime 146210 ms[0m
+[0;32mI (124273) net: RX 78:42:1c:68:44:98 | node B | counter 147 | uptime 147210 ms[0m
+[0;32mI (125272) net: RX 78:42:1c:68:44:98 | node B | counter 148 | uptime 148210 ms[0m
+[0;32mI (126272) net: RX 78:42:1c:68:44:98 | node B | counter 149 | uptime 149210 ms[0m
+[0;32mI (127272) net: RX 78:42:1c:68:44:98 | node B | counter 150 | uptime 150210 ms[0m
+[0;32mI (128272) net: RX 78:42:1c:68:44:98 | node B | counter 151 | uptime 151210 ms[0m
+[0;32mI (129272) net: RX 78:42:1c:68:44:98 | node B | counter 152 | uptime 152210 ms[0m
+[0;32mI (130277) net: RX 78:42:1c:68:44:98 | node B | counter 153 | uptime 153210 ms[0m
+[0;32mI (131272) net: RX 78:42:1c:68:44:98 | node B | counter 154 | uptime 154210 ms[0m
+[0;32mI (132272) net: RX 78:42:1c:68:44:98 | node B | counter 155 | uptime 155210 ms[0m
+[0;32mI (133272) net: RX 78:42:1c:68:44:98 | node B | counter 156 | uptime 156210 ms[0m
+[0;32mI (134273) net: RX 78:42:1c:68:44:98 | node B | counter 157 | uptime 157210 ms[0m
+[0;32mI (135272) net: RX 78:42:1c:68:44:98 | node B | counter 158 | uptime 158210 ms[0m
+[0;32mI (136275) net: RX 78:42:1c:68:44:98 | node B | counter 159 | uptime 159210 ms[0m
+[0;32mI (137272) net: RX 78:42:1c:68:44:98 | node B | counter 160 | uptime 160210 ms[0m
+[0;32mI (138272) net: RX 78:42:1c:68:44:98 | node B | counter 161 | uptime 161210 ms[0m
+[0;32mI (139273) net: RX 78:42:1c:68:44:98 | node B | counter 162 | uptime 162210 ms[0m
+[0;32mI (140272) net: RX 78:42:1c:68:44:98 | node B | counter 163 | uptime 163210 ms[0m
+[0;32mI (141272) net: RX 78:42:1c:68:44:98 | node B | counter 164 | uptime 164210 ms[0m
+[0;32mI (142272) net: RX 78:42:1c:68:44:98 | node B | counter 165 | uptime 165210 ms[0m
+[0;32mI (143272) net: RX 78:42:1c:68:44:98 | node B | counter 166 | uptime 166210 ms[0m
+[0;32mI (144272) net: RX 78:42:1c:68:44:98 | node B | counter 167 | uptime 167210 ms[0m
+[0;32mI (145274) net: RX 78:42:1c:68:44:98 | node B | counter 168 | uptime 168210 ms[0m
+[0;32mI (146272) net: RX 78:42:1c:68:44:98 | node B | counter 169 | uptime 169210 ms[0m
+[0;32mI (147272) net: RX 78:42:1c:68:44:98 | node B | counter 170 | uptime 170210 ms[0m
+[0;32mI (148272) net: RX 78:42:1c:68:44:98 | node B | counter 171 | uptime 171210 ms[0m
+[0;32mI (149272) net: RX 78:42:1c:68:44:98 | node B | counter 172 | uptime 172210 ms[0m
+[0;32mI (150272) net: RX 78:42:1c:68:44:98 | node B | counter 173 | uptime 173210 ms[0m
+[0;32mI (151272) net: RX 78:42:1c:68:44:98 | node B | counter 174 | uptime 174210 ms[0m
+[0;32mI (152272) net: RX 78:42:1c:68:44:98 | node B | counter 175 | uptime 175210 ms[0m
+[0;32mI (153272) net: RX 78:42:1c:68:44:98 | node B | counter 176 | uptime 176210 ms[0m
+[0;32mI (154272) net: RX 78:42:1c:68:44:98 | node B | counter 177 | uptime 177210 ms[0m
+[0;32mI (155272) net: RX 78:42:1c:68:44:98 | node B | counter 178 | uptime 178210 ms[0m
+[0;32mI (156272) net: RX 78:42:1c:68:44:98 | node B | counter 179 | uptime 179210 ms[0m
+[0;32mI (157272) net: RX 78:42:1c:68:44:98 | node B | counter 180 | uptime 180210 ms[0m
+[0;32mI (158272) net: RX 78:42:1c:68:44:98 | node B | counter 181 | uptime 181210 ms[0m
+[0;32mI (159271) net: RX 78:42:1c:68:44:98 | node B | counter 182 | uptime 182210 ms[0m
+[0;32mI (160271) net: RX 78:42:1c:68:44:98 | node B | counter 183 | uptime 183210 ms[0m
+[0;32mI (161271) net: RX 78:42:1c:68:44:98 | node B | counter 184 | uptime 184210 ms[0m
+[0;32mI (162273) net: RX 78:42:1c:68:44:98 | node B | counter 185 | uptime 185210 ms[0m
+[0;32mI (163271) net: RX 78:42:1c:68:44:98 | node B | counter 186 | uptime 186210 ms[0m
+[0;32mI (164271) net: RX 78:42:1c:68:44:98 | node B | counter 187 | uptime 187210 ms[0m
+[0;32mI (165271) net: RX 78:42:1c:68:44:98 | node B | counter 188 | uptime 188210 ms[0m
+[0;32mI (166271) net: RX 78:42:1c:68:44:98 | node B | counter 189 | uptime 189210 ms[0m
+[0;32mI (167274) net: RX 78:42:1c:68:44:98 | node B | counter 190 | uptime 190210 ms[0m
+[0;32mI (168271) net: RX 78:42:1c:68:44:98 | node B | counter 191 | uptime 191210 ms[0m
+[0;32mI (169271) net: RX 78:42:1c:68:44:98 | node B | counter 192 | uptime 192210 ms[0m
+[0;32mI (170275) net: RX 78:42:1c:68:44:98 | node B | counter 193 | uptime 193210 ms[0m
+[0;32mI (171271) net: RX 78:42:1c:68:44:98 | node B | counter 194 | uptime 194210 ms[0m
+[0;32mI (172271) net: RX 78:42:1c:68:44:98 | node B | counter 195 | uptime 195210 ms[0m
+[0;32mI (173271) net: RX 78:42:1c:68:44:98 | node B | counter 196 | uptime 196210 ms[0m
+[0;32mI (174271) net: RX 78:42:1c:68:44:98 | node B | counter 197 | uptime 197210 ms[0m
+[0;32mI (175271) net: RX 78:42:1c:68:44:98 | node B | counter 198 | uptime 198210 ms[0m
+[0;32mI (176271) net: RX 78:42:1c:68:44:98 | node B | counter 199 | uptime 199210 ms[0m
+[0;32mI (177271) net: RX 78:42:1c:68:44:98 | node B | counter 200 | uptime 200210 ms[0m
+[0;32mI (178271) net: RX 78:42:1c:68:44:98 | node B | counter 201 | uptime 201210 ms[0m
+[0;32mI (179271) net: RX 78:42:1c:68:44:98 | node B | counter 202 | uptime 202210 ms[0m
+[0;32mI (180276) net: RX 78:42:1c:68:44:98 | node B | counter 203 | uptime 203210 ms[0m
+[0;32mI (181271) net: RX 78:42:1c:68:44:98 | node B | counter 204 | uptime 204210 ms[0m
+[0;32mI (182271) net: RX 78:42:1c:68:44:98 | node B | counter 205 | uptime 205210 ms[0m
+[0;32mI (183271) net: RX 78:42:1c:68:44:98 | node B | counter 206 | uptime 206210 ms[0m
+[0;32mI (184273) net: RX 78:42:1c:68:44:98 | node B | counter 207 | uptime 207210 ms[0m
+[0;32mI (185271) net: RX 78:42:1c:68:44:98 | node B | counter 208 | uptime 208210 ms[0m
+[0;32mI (186271) net: RX 78:42:1c:68:44:98 | node B | counter 209 | uptime 209210 ms[0m
+[0;32mI (187271) net: RX 78:42:1c:68:44:98 | node B | counter 210 | uptime 210210 ms[0m
+[0;32mI (188272) net: RX 78:42:1c:68:44:98 | node B | counter 211 | uptime 211210 ms[0m
+[0;32mI (189275) net: RX 78:42:1c:68:44:98 | node B | counter 212 | uptime 212210 ms[0m
+[0;32mI (190270) net: RX 78:42:1c:68:44:98 | node B | counter 213 | uptime 213210 ms[0m
+[0;32mI (191271) net: RX 78:42:1c:68:44:98 | node B | counter 214 | uptime 214210 ms[0m
+[0;32mI (192270) net: RX 78:42:1c:68:44:98 | node B | counter 215 | uptime 215210 ms[0m
+[0;32mI (193275) net: RX 78:42:1c:68:44:98 | node B | counter 216 | uptime 216210 ms[0m
+[0;32mI (194273) net: RX 78:42:1c:68:44:98 | node B | counter 217 | uptime 217210 ms[0m
+[0;32mI (195270) net: RX 78:42:1c:68:44:98 | node B | counter 218 | uptime 218210 ms[0m
+[0;32mI (196274) net: RX 78:42:1c:68:44:98 | node B | counter 219 | uptime 219210 ms[0m
+[0;32mI (197271) net: RX 78:42:1c:68:44:98 | node B | counter 220 | uptime 220210 ms[0m
+[0;32mI (198270) net: RX 78:42:1c:68:44:98 | node B | counter 221 | uptime 221210 ms[0m
+[0;32mI (199270) net: RX 78:42:1c:68:44:98 | node B | counter 222 | uptime 222210 ms[0m
+[0;32mI (200270) net: RX 78:42:1c:68:44:98 | node B | counter 223 | uptime 223210 ms[0m
+[0;32mI (201271) net: RX 78:42:1c:68:44:98 | node B | counter 224 | uptime 224210 ms[0m
+[0;32mI (202270) net: RX 78:42:1c:68:44:98 | node B | counter 225 | uptime 225210 ms[0m
+[0;32mI (203273) net: RX 78:42:1c:68:44:98 | node B | counter 226 | uptime 226210 ms[0m
+[0;32mI (204270) net: RX 78:42:1c:68:44:98 | node B | counter 227 | uptime 227210 ms[0m
+[0;32mI (205270) net: RX 78:42:1c:68:44:98 | node B | counter 228 | uptime 228210 ms[0m
+[0;32mI (206270) net: RX 78:42:1c:68:44:98 | node B | counter 229 | uptime 229210 ms[0m
+[0;32mI (207270) net: RX 78:42:1c:68:44:98 | node B | counter 230 | uptime 230210 ms[0m
+[0;32mI (208270) net: RX 78:42:1c:68:44:98 | node B | counter 231 | uptime 231210 ms[0m
+[0;32mI (209270) net: RX 78:42:1c:68:44:98 | node B | counter 232 | uptime 232210 ms[0m
+[0;32mI (210270) net: RX 78:42:1c:68:44:98 | node B | counter 233 | uptime 233210 ms[0m
+[0;32mI (211270) net: RX 78:42:1c:68:44:98 | node B | counter 234 | uptime 234210 ms[0m
+[0;32mI (212270) net: RX 78:42:1c:68:44:98 | node B | counter 235 | uptime 235210 ms[0m
+[0;32mI (213272) net: RX 78:42:1c:68:44:98 | node B | counter 236 | uptime 236210 ms[0m
+[0;32mI (214270) net: RX 78:42:1c:68:44:98 | node B | counter 237 | uptime 237210 ms[0m
+[0;32mI (215270) net: RX 78:42:1c:68:44:98 | node B | counter 238 | uptime 238210 ms[0m
+[0;32mI (216270) net: RX 78:42:1c:68:44:98 | node B | counter 239 | uptime 239210 ms[0m
+[0;32mI (217270) net: RX 78:42:1c:68:44:98 | node B | counter 240 | uptime 240210 ms[0m
+[0;32mI (218270) net: RX 78:42:1c:68:44:98 | node B | counter 241 | uptime 241210 ms[0m
+[0;32mI (219270) net: RX 78:42:1c:68:44:98 | node B | counter 242 | uptime 242210 ms[0m
+[0;32mI (220270) net: RX 78:42:1c:68:44:98 | node B | counter 243 | uptime 243210 ms[0m
+[0;32mI (221271) net: RX 78:42:1c:68:44:98 | node B | counter 244 | uptime 244210 ms[0m
+[0;32mI (222272) net: RX 78:42:1c:68:44:98 | node B | counter 245 | uptime 245210 ms[0m
+[0;32mI (223269) net: RX 78:42:1c:68:44:98 | node B | counter 246 | uptime 246210 ms[0m
+[0;32mI (224269) net: RX 78:42:1c:68:44:98 | node B | counter 247 | uptime 247210 ms[0m
+[0;32mI (225269) net: RX 78:42:1c:68:44:98 | node B | counter 248 | uptime 248210 ms[0m
+[0;32mI (226269) net: RX 78:42:1c:68:44:98 | node B | counter 249 | uptime 249210 ms[0m
+[0;32mI (227269) net: RX 78:42:1c:68:44:98 | node B | counter 250 | uptime 250210 ms[0m
+[0;32mI (228269) net: RX 78:42:1c:68:44:98 | node B | counter 251 | uptime 251210 ms[0m
+[0;32mI (229269) net: RX 78:42:1c:68:44:98 | node B | counter 252 | uptime 252210 ms[0m
+[0;32mI (230271) net: RX 78:42:1c:68:44:98 | node B | counter 253 | uptime 253210 ms[0m
+[0;32mI (231269) net: RX 78:42:1c:68:44:98 | node B | counter 254 | uptime 254210 ms[0m
+[0;32mI (232269) net: RX 78:42:1c:68:44:98 | node B | counter 255 | uptime 255210 ms[0m
+[0;32mI (233271) net: RX 78:42:1c:68:44:98 | node B | counter 256 | uptime 256210 ms[0m
+[0;32mI (234269) net: RX 78:42:1c:68:44:98 | node B | counter 257 | uptime 257210 ms[0m
+[0;32mI (235269) net: RX 78:42:1c:68:44:98 | node B | counter 258 | uptime 258210 ms[0m
+[0;32mI (236269) net: RX 78:42:1c:68:44:98 | node B | counter 259 | uptime 259210 ms[0m
+[0;32mI (237272) net: RX 78:42:1c:68:44:98 | node B | counter 260 | uptime 260210 ms[0m
+[0;32mI (238269) net: RX 78:42:1c:68:44:98 | node B | counter 261 | uptime 261210 ms[0m
+[0;32mI (239269) net: RX 78:42:1c:68:44:98 | node B | counter 262 | uptime 262210 ms[0m
+[0;32mI (240269) net: RX 78:42:1c:68:44:98 | node B | counter 263 | uptime 263210 ms[0m
+[0;32mI (241269) net: RX 78:42:1c:68:44:98 | node B | counter 264 | uptime 264210 ms[0m
+[0;32mI (242269) net: RX 78:42:1c:68:44:98 | node B | counter 265 | uptime 265210 ms[0m
+[0;32mI (243271) net: RX 78:42:1c:68:44:98 | node B | counter 266 | uptime 266210 ms[0m
+[0;32mI (244269) net: RX 78:42:1c:68:44:98 | node B | counter 267 | uptime 267210 ms[0m
+[0;32mI (245269) net: RX 78:42:1c:68:44:98 | node B | counter 268 | uptime 268210 ms[0m
+[0;32mI (246269) net: RX 78:42:1c:68:44:98 | node B | counter 269 | uptime 269210 ms[0m
+[0;32mI (247269) net: RX 78:42:1c:68:44:98 | node B | counter 270 | uptime 270210 ms[0m
+[0;32mI (248269) net: RX 78:42:1c:68:44:98 | node B | counter 271 | uptime 271210 ms[0m
+[0;32mI (249269) net: RX 78:42:1c:68:44:98 | node B | counter 272 | uptime 272210 ms[0m
+[0;32mI (250269) net: RX 78:42:1c:68:44:98 | node B | counter 273 | uptime 273210 ms[0m
+[0;32mI (251269) net: RX 78:42:1c:68:44:98 | node B | counter 274 | uptime 274210 ms[0m
+[0;32mI (252269) net: RX 78:42:1c:68:44:98 | node B | counter 275 | uptime 275210 ms[0m
+[0;32mI (253269) net: RX 78:42:1c:68:44:98 | node B | counter 276 | uptime 276210 ms[0m
+[0;32mI (254268) net: RX 78:42:1c:68:44:98 | node B | counter 277 | uptime 277210 ms[0m
+[0;32mI (255268) net: RX 78:42:1c:68:44:98 | node B | counter 278 | uptime 278210 ms[0m
+[0;32mI (256269) net: RX 78:42:1c:68:44:98 | node B | counter 279 | uptime 279210 ms[0m
+[0;32mI (257268) net: RX 78:42:1c:68:44:98 | node B | counter 280 | uptime 280210 ms[0m
+[0;32mI (258268) net: RX 78:42:1c:68:44:98 | node B | counter 281 | uptime 281210 ms[0m
+[0;32mI (259268) net: RX 78:42:1c:68:44:98 | node B | counter 282 | uptime 282210 ms[0m
+[0;32mI (260270) net: RX 78:42:1c:68:44:98 | node B | counter 283 | uptime 283210 ms[0m
+[0;32mI (261268) net: RX 78:42:1c:68:44:98 | node B | counter 284 | uptime 284210 ms[0m
+[0;32mI (262268) net: RX 78:42:1c:68:44:98 | node B | counter 285 | uptime 285210 ms[0m
+[0;32mI (263268) net: RX 78:42:1c:68:44:98 | node B | counter 286 | uptime 286210 ms[0m
+[0;32mI (264268) net: RX 78:42:1c:68:44:98 | node B | counter 287 | uptime 287210 ms[0m
+[0;32mI (265268) net: RX 78:42:1c:68:44:98 | node B | counter 288 | uptime 288210 ms[0m
+[0;32mI (266268) net: RX 78:42:1c:68:44:98 | node B | counter 289 | uptime 289210 ms[0m
+[0;32mI (267270) net: RX 78:42:1c:68:44:98 | node B | counter 290 | uptime 290210 ms[0m
+[0;32mI (268268) net: RX 78:42:1c:68:44:98 | node B | counter 291 | uptime 291210 ms[0m
+[0;32mI (269268) net: RX 78:42:1c:68:44:98 | node B | counter 292 | uptime 292210 ms[0m
+[0;32mI (270268) net: RX 78:42:1c:68:44:98 | node B | counter 293 | uptime 293210 ms[0m
+[0;32mI (271268) net: RX 78:42:1c:68:44:98 | node B | counter 294 | uptime 294210 ms[0m
+[0;32mI (272268) net: RX 78:42:1c:68:44:98 | node B | counter 295 | uptime 295210 ms[0m
+[0;32mI (273268) net: RX 78:42:1c:68:44:98 | node B | counter 296 | uptime 296210 ms[0m
+[0;32mI (274268) net: RX 78:42:1c:68:44:98 | node B | counter 297 | uptime 297210 ms[0m
+[0;32mI (275268) net: RX 78:42:1c:68:44:98 | node B | counter 298 | uptime 298210 ms[0m
+[0;32mI (276268) net: RX 78:42:1c:68:44:98 | node B | counter 299 | uptime 299210 ms[0m
+[0;32mI (277269) net: RX 78:42:1c:68:44:98 | node B | counter 300 | uptime 300210 ms[0m
+[0;32mI (278268) net: RX 78:42:1c:68:44:98 | node B | counter 301 | uptime 301210 ms[0m
+[0;32mI (279270) net: RX 78:42:1c:68:44:98 | node B | counter 302 | uptime 302210 ms[0m
+[0;32mI (280268) net: RX 78:42:1c:68:44:98 | node B | counter 303 | uptime 303210 ms[0m
+[0;32mI (281268) net: RX 78:42:1c:68:44:98 | node B | counter 304 | uptime 304210 ms[0m
+[0;32mI (282270) net: RX 78:42:1c:68:44:98 | node B | counter 305 | uptime 305210 ms[0m
+[0;32mI (283268) net: RX 78:42:1c:68:44:98 | node B | counter 306 | uptime 306210 ms[0m
+[0;32mI (284268) net: RX 78:42:1c:68:44:98 | node B | counter 307 | uptime 307210 ms[0m
+[0;32mI (285268) net: RX 78:42:1c:68:44:98 | node B | counter 308 | uptime 308210 ms[0m
+[0;32mI (286268) net: RX 78:42:1c:68:44:98 | node B | counter 309 | uptime 309210 ms[0m
+[0;32mI (287267) net: RX 78:42:1c:68:44:98 | node B | counter 310 | uptime 310210 ms[0m
+[0;32mI (288267) net: RX 78:42:1c:68:44:98 | node B | counter 311 | uptime 311210 ms[0m
+[0;32mI (289267) net: RX 78:42:1c:68:44:98 | node B | counter 312 | uptime 312210 ms[0m
+[0;32mI (290267) net: RX 78:42:1c:68:44:98 | node B | counter 313 | uptime 313210 ms[0m
+[0;32mI (291271) net: RX 78:42:1c:68:44:98 | node B | counter 314 | uptime 314210 ms[0m
+[0;32mI (292267) net: RX 78:42:1c:68:44:98 | node B | counter 315 | uptime 315210 ms[0m
+[0;32mI (293267) net: RX 78:42:1c:68:44:98 | node B | counter 316 | uptime 316210 ms[0m
+[0;32mI (294267) net: RX 78:42:1c:68:44:98 | node B | counter 317 | uptime 317210 ms[0m
+[0;32mI (295267) net: RX 78:42:1c:68:44:98 | node B | counter 318 | uptime 318210 ms[0m
+[0;32mI (296267) net: RX 78:42:1c:68:44:98 | node B | counter 319 | uptime 319210 ms[0m
+[0;32mI (297267) net: RX 78:42:1c:68:44:98 | node B | counter 320 | uptime 320210 ms[0m
+[0;32mI (298267) net: RX 78:42:1c:68:44:98 | node B | counter 321 | uptime 321210 ms[0m
+[0;32mI (299269) net: RX 78:42:1c:68:44:98 | node B | counter 322 | uptime 322210 ms[0m
+[0;32mI (300269) net: RX 78:42:1c:68:44:98 | node B | counter 323 | uptime 323210 ms[0m
+[0;32mI (301267) net: RX 78:42:1c:68:44:98 | node B | counter 324 | uptime 324210 ms[0m
+[0;32mI (302267) net: RX 78:42:1c:68:44:98 | node B | counter 325 | uptime 325210 ms[0m
+[0;32mI (303267) net: RX 78:42:1c:68:44:98 | node B | counter 326 | uptime 326210 ms[0m
+[0;32mI (304267) net: RX 78:42:1c:68:44:98 | node B | counter 327 | uptime 327210 ms[0m
+[0;32mI (305270) net: RX 78:42:1c:68:44:98 | node B | counter 328 | uptime 328210 ms[0m
+[0;32mI (306267) net: RX 78:42:1c:68:44:98 | node B | counter 329 | uptime 329210 ms[0m
+[0;32mI (307267) net: RX 78:42:1c:68:44:98 | node B | counter 330 | uptime 330210 ms[0m
+[0;32mI (308268) net: RX 78:42:1c:68:44:98 | node B | counter 331 | uptime 331210 ms[0m
+[0;32mI (309267) net: RX 78:42:1c:68:44:98 | node B | counter 332 | uptime 332210 ms[0m
+[0;32mI (310268) net: RX 78:42:1c:68:44:98 | node B | counter 333 | uptime 333210 ms[0m
+[0;32mI (311267) net: RX 78:42:1c:68:44:98 | node B | counter 334 | uptime 334210 ms[0m
+[0;32mI (312273) net: RX 78:42:1c:68:44:98 | node B | counter 335 | uptime 335210 ms[0m
+[0;32mI (313267) net: RX 78:42:1c:68:44:98 | node B | counter 336 | uptime 336210 ms[0m
+[0;32mI (314267) net: RX 78:42:1c:68:44:98 | node B | counter 337 | uptime 337210 ms[0m
+[0;32mI (315267) net: RX 78:42:1c:68:44:98 | node B | counter 338 | uptime 338210 ms[0m
+[0;32mI (316267) net: RX 78:42:1c:68:44:98 | node B | counter 339 | uptime 339210 ms[0m
+[0;32mI (317268) net: RX 78:42:1c:68:44:98 | node B | counter 340 | uptime 340210 ms[0m
+[0;32mI (318266) net: RX 78:42:1c:68:44:98 | node B | counter 341 | uptime 341210 ms[0m
+[0;32mI (319266) net: RX 78:42:1c:68:44:98 | node B | counter 342 | uptime 342210 ms[0m
+[0;32mI (320269) net: RX 78:42:1c:68:44:98 | node B | counter 343 | uptime 343210 ms[0m
+[0;32mI (321266) net: RX 78:42:1c:68:44:98 | node B | counter 344 | uptime 344210 ms[0m
+[0;32mI (322266) net: RX 78:42:1c:68:44:98 | node B | counter 345 | uptime 345210 ms[0m
+[0;32mI (323266) net: RX 78:42:1c:68:44:98 | node B | counter 346 | uptime 346210 ms[0m
+[0;32mI (324266) net: RX 78:42:1c:68:44:98 | node B | counter 347 | uptime 347210 ms[0m
+[0;32mI (325266) net: RX 78:42:1c:68:44:98 | node B | counter 348 | uptime 348210 ms[0m
+[0;32mI (326266) net: RX 78:42:1c:68:44:98 | node B | counter 349 | uptime 349210 ms[0m
+[0;32mI (327266) net: RX 78:42:1c:68:44:98 | node B | counter 350 | uptime 350210 ms[0m
+[0;32mI (328268) net: RX 78:42:1c:68:44:98 | node B | counter 351 | uptime 351210 ms[0m
+[0;32mI (329267) net: RX 78:42:1c:68:44:98 | node B | counter 352 | uptime 352210 ms[0m
+[0;32mI (330266) net: RX 78:42:1c:68:44:98 | node B | counter 353 | uptime 353210 ms[0m
+[0;32mI (331266) net: RX 78:42:1c:68:44:98 | node B | counter 354 | uptime 354210 ms[0m
+[0;32mI (332270) net: RX 78:42:1c:68:44:98 | node B | counter 355 | uptime 355210 ms[0m
+[0;32mI (333266) net: RX 78:42:1c:68:44:98 | node B | counter 356 | uptime 356210 ms[0m
+[0;32mI (334266) net: RX 78:42:1c:68:44:98 | node B | counter 357 | uptime 357210 ms[0m
+[0;32mI (335266) net: RX 78:42:1c:68:44:98 | node B | counter 358 | uptime 358210 ms[0m
+[0;32mI (336267) net: RX 78:42:1c:68:44:98 | node B | counter 359 | uptime 359210 ms[0m
+[0;32mI (337266) net: RX 78:42:1c:68:44:98 | node B | counter 360 | uptime 360210 ms[0m
+[0;32mI (338266) net: RX 78:42:1c:68:44:98 | node B | counter 361 | uptime 361210 ms[0m
+[0;32mI (339267) net: RX 78:42:1c:68:44:98 | node B | counter 362 | uptime 362210 ms[0m
+[0;32mI (340266) net: RX 78:42:1c:68:44:98 | node B | counter 363 | uptime 363210 ms[0m
+[0;32mI (341266) net: RX 78:42:1c:68:44:98 | node B | counter 364 | uptime 364210 ms[0m
+[0;32mI (342266) net: RX 78:42:1c:68:44:98 | node B | counter 365 | uptime 365210 ms[0m
+[0;32mI (343269) net: RX 78:42:1c:68:44:98 | node B | counter 366 | uptime 366210 ms[0m
+[0;32mI (344266) net: RX 78:42:1c:68:44:98 | node B | counter 367 | uptime 367210 ms[0m
+[0;32mI (345267) net: RX 78:42:1c:68:44:98 | node B | counter 368 | uptime 368210 ms[0m
+[0;32mI (346266) net: RX 78:42:1c:68:44:98 | node B | counter 369 | uptime 369210 ms[0m
+[0;32mI (347266) net: RX 78:42:1c:68:44:98 | node B | counter 370 | uptime 370210 ms[0m
+[0;32mI (348270) net: RX 78:42:1c:68:44:98 | node B | counter 371 | uptime 371210 ms[0m
+[0;32mI (349265) net: RX 78:42:1c:68:44:98 | node B | counter 372 | uptime 372210 ms[0m
+[0;32mI (350265) net: RX 78:42:1c:68:44:98 | node B | counter 373 | uptime 373210 ms[0m
+[0;32mI (351266) net: RX 78:42:1c:68:44:98 | node B | counter 374 | uptime 374210 ms[0m
+[0;32mI (352265) net: RX 78:42:1c:68:44:98 | node B | counter 375 | uptime 375210 ms[0m
+[0;32mI (353265) net: RX 78:42:1c:68:44:98 | node B | counter 376 | uptime 376210 ms[0m
+[0;32mI (354265) net: RX 78:42:1c:68:44:98 | node B | counter 377 | uptime 377210 ms[0m
+[0;32mI (355265) net: RX 78:42:1c:68:44:98 | node B | counter 378 | uptime 378210 ms[0m
+[0;32mI (356265) net: RX 78:42:1c:68:44:98 | node B | counter 379 | uptime 379210 ms[0m
+[0;32mI (357265) net: RX 78:42:1c:68:44:98 | node B | counter 380 | uptime 380210 ms[0m
+[0;32mI (358265) net: RX 78:42:1c:68:44:98 | node B | counter 381 | uptime 381210 ms[0m
+[0;32mI (359265) net: RX 78:42:1c:68:44:98 | node B | counter 382 | uptime 382210 ms[0m
+[0;32mI (360265) net: RX 78:42:1c:68:44:98 | node B | counter 383 | uptime 383210 ms[0m
+[0;32mI (361265) net: RX 78:42:1c:68:44:98 | node B | counter 384 | uptime 384210 ms[0m
+[0;32mI (362265) net: RX 78:42:1c:68:44:98 | node B | counter 385 | uptime 385210 ms[0m
+[0;32mI (363265) net: RX 78:42:1c:68:44:98 | node B | counter 386 | uptime 386210 ms[0m
+[0;32mI (364265) net: RX 78:42:1c:68:44:98 | node B | counter 387 | uptime 387210 ms[0m

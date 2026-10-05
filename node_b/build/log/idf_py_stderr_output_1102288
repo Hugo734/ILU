@@ -1,0 +1,8 @@
+Command: ninja all
+CMake Error at /home/champagnepapi/esp/esp-idf/tools/cmake/component.cmake:454 (message):
+  Called idf_component_register from a non-component directory.
+Call Stack (most recent call first):
+  CMakeLists.txt:5 (idf_component_register)
+
+
+ninja: error: rebuilding 'build.ninja': subcommand failed

@@ -1,0 +1,307 @@
+Command: /home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python /home/champagnepapi/esp/esp-idf/tools/idf_monitor.py -p /dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /home/champagnepapi/Documents/ILU/node_b/build/node_b.elf /home/champagnepapi/Documents/ILU/node_b/build/bootloader/bootloader.elf -m '/home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python' '/home/champagnepapi/esp/esp-idf/tools/idf.py' '-C' 'node_b' '-p' '/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0'
+ partition at offset 0x10000
+[0;32mI (161) boot: Disabling RNG early entropy source...[0m
+�ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Oct  4 2026 10:58:42[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (33) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (37) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (44) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (77) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=0a150h ( 41296) map[0m
+[0;32mI (102) esp_image: segment 1: paddr=0001a178 vaddr=3ffb0000 size=0288ch ( 10380) load[0m
+[0;32mI (106) esp_image: segment 2: paddr=0001ca0c vaddr=40080000 size=0360ch ( 13836) load[0m
+[0;32mI (112) esp_image: segment 3: paddr=00020020 vaddr=400d0020 size=11cbch ( 72892) map[0m
+[0;32mI (138) esp_image: segment 4: paddr=00031ce4 vaddr=4008360c size=09a98h ( 39576) load[0m
+[0;32mI (154) esp_image: segment 5: paddr=0003b784 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (161) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (161) boot: Disabling RNG early entropy source...[0m
+[0;32mI (172) cpu_start: Multicore app[0m
+[0;32mI (181) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (181) cpu_start: Pro cpu start user code[0m
+[0;32mI (181) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (183) app_init: Application information:[0m
+[0;32mI (187) app_init: Project name:     node_b[0m
+[0;32mI (190) app_init: App version:      32c7f0d-dirty[0m
+[0;32mI (195) app_init: Compile time:     Oct  4 2026 21:58:00[0m
+[0;32mI (200) app_init: ELF file SHA256:  2f709f37e...[0m
+[0;32mI (204) app_init: ESP-IDF:          v5.5.5[0m
+[0;32mI (208) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (212) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (216) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (220) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (226) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (231) heap_init: At 3FFB31B0 len 0002CE50 (179 KiB): DRAM[0m
+[0;32mI (236) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (242) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (247) heap_init: At 4008D0A4 len 00012F5C (75 KiB): IRAM[0m
+[0;32mI (254) spi_flash: detected chip: generic[0m
+[0;32mI (256) spi_flash: flash io: dio[0m
+[0;32mI (260) main_task: Started on CPU0[0m
+[0;32mI (262) main_task: Calling app_main()[0m
+[0;33mW (288) node_b: prueba: ROJO / VERDE / AMARILLO, 1.5 s cada uno[0m
+[0;32mI (4795) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (5022) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (5229) node_b:  87 cm | btn 0 | CERRADO[0m
+[0;32mI (5456) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (5663) node_b:  87 cm | btn 0 | CERRADO[0m
+[0;32mI (5870) node_b:  85 cm | btn 0 | CERRADO[0m
+[0;32mI (6077) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (6284) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (6491) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (6698) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (6905) node_b:  87 cm | btn 0 | CERRADO[0m
+[0;32mI (7108) node_b:  13 cm | btn 0 | CERRADO[0m
+[0;32mI (7315) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (7522) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (7729) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (7936) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (8143) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (8350) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (8557) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (8764) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (8971) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (9178) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (9385) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (9588) node_b:  13 cm | btn 0 | CERRADO[0m
+[0;32mI (9795) node_b:  85 cm | btn 0 | CERRADO[0m
+[0;32mI (10002) node_b:  85 cm | btn 0 | CERRADO[0m
+[0;32mI (10209) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (10416) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (10623) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (10830) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (11057) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (11264) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (11491) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (11694) node_b:  19 cm | btn 0 | CERRADO[0m
+[0;32mI (11921) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (12148) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (12351) node_b:  15 cm | btn 0 | CERRADO[0m
+[0;32mI (12554) node_b:  14 cm | btn 0 | CERRADO[0m
+[0;32mI (12757) node_b:  14 cm | btn 0 | CERRADO[0m
+[0;32mI (12960) node_b:  13 cm | btn 0 | CERRADO[0m
+[0;32mI (13163) node_b:  13 cm | btn 0 | CERRADO[0m
+[0;32mI (13365) node_b:  12 cm | btn 0 | CERRADO[0m
+[0;32mI (13568) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (13770) node_b:  11 cm | btn 0 | CERRADO[0m
+[0;32mI (13973) node_b:  12 cm | btn 0 | CERRADO[0m
+[0;32mI (14176) node_b:  10 cm | btn 0 | CERCA[0m
+[0;32mI (14379) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (14581) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (14783) node_b:  11 cm | btn 0 | CERRADO[0m
+[0;32mI (14986) node_b:  11 cm | btn 0 | CERRADO[0m
+[0;32mI (15189) node_b:  10 cm | btn 0 | CERCA[0m
+[0;32mI (15392) node_b:  10 cm | btn 0 | CERCA[0m
+[0;32mI (15595) node_b:  10 cm | btn 0 | CERCA[0m
+[0;32mI (15798) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (16000) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (16202) node_b:   8 cm | btn 0 | CERCA[0m
+[0;32mI (16404) node_b:  10 cm | btn 0 | CERCA[0m
+[0;32mI (16607) node_b:   8 cm | btn 0 | CERCA[0m
+[0;32mI (16809) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (17011) node_b:   8 cm | btn 0 | CERCA[0m
+[0;32mI (17213) node_b:  10 cm | btn 0 | CERCA[0m
+[0;32mI (17416) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (17618) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (17820) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (18022) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (18224) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (18426) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (18628) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (18830) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (19032) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (19234) node_b:   9 cm | btn 1 | ACCESO[0m
+[0;32mI (19436) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (19638) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (19840) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (20042) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (20244) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (20446) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (20648) node_b:   1 cm | btn 0 | ACCESO[0m
+[0;32mI (20850) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (21052) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (21254) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (21456) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (21658) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (21860) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (22062) node_b:   9 cm | btn 0 | ACCESO[0m
+[0;32mI (22264) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (22466) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (22668) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (22870) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (23072) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (23274) node_b:   9 cm | btn 0 | CERCA[0m
+[0;32mI (23476) node_b:   7 cm | btn 0 | CERCA[0m
+[0;32mI (23678) node_b:   7 cm | btn 0 | CERCA[0m
+[0;32mI (23880) node_b:   7 cm | btn 0 | CERCA[0m
+[0;32mI (24107) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (24314) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (24541) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (24768) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (24995) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (25197) node_b:  10 cm | btn 0 | CERCA[0m
+[0;32mI (25400) node_b:  11 cm | btn 0 | CERRADO[0m
+[0;32mI (25603) node_b:   7 cm | btn 0 | CERCA[0m
+[0;32mI (25805) node_b:   7 cm | btn 0 | CERCA[0m
+[0;32mI (26007) node_b:   7 cm | btn 0 | CERCA[0m
+[0;32mI (26209) node_b:   6 cm | btn 0 | CERCA[0m
+[0;32mI (26411) node_b:   6 cm | btn 0 | CERCA[0m
+[0;32mI (26613) node_b:   3 cm | btn 0 | CERCA[0m
+[0;32mI (26815) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (27017) node_b:   3 cm | btn 0 | CERCA[0m
+[0;32mI (27219) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (27421) node_b:   2 cm | btn 0 | CERCA[0m
+[0;32mI (27623) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (27825) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (28027) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (28229) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (28431) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (28633) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (28835) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (29037) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (29239) node_b:   2 cm | btn 0 | CERCA[0m
+[0;32mI (29441) node_b:   2 cm | btn 0 | CERCA[0m
+[0;32mI (29643) node_b:   2 cm | btn 0 | CERCA[0m
+[0;32mI (29845) node_b:   2 cm | btn 0 | CERCA[0m
+[0;32mI (30047) node_b:   7 cm | btn 0 | CERCA[0m
+[0;32mI (30249) node_b:   2 cm | btn 0 | CERCA[0m
+[0;32mI (30451) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (30653) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (30855) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (31057) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (31259) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (31461) node_b:  10 cm | btn 0 | CERCA[0m
+[0;32mI (31669) node_b:  87 cm | btn 0 | CERRADO[0m
+[0;32mI (31896) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (32123) node_b:   0 cm | btn 1 | ACCESO[0m
+[0;32mI (32330) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (32537) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (32744) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (32951) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (33158) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (33365) node_b:  87 cm | btn 0 | ACCESO[0m
+[0;32mI (33568) node_b:  14 cm | btn 0 | ACCESO[0m
+[0;32mI (33775) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (34002) node_b:   0 cm | btn 0 | ACCESO[0m
+[0;32mI (34229) node_b:   0 cm | btn 0 | ACCESO[0m
+[0;32mI (34456) node_b:   0 cm | btn 0 | ACCESO[0m
+[0;32mI (34663) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (34870) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (35077) node_b:  87 cm | btn 0 | ACCESO[0m
+[0;32mI (35304) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (35506) node_b:   6 cm | btn 0 | CERCA[0m
+[0;32mI (35708) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (35910) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (36112) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (36314) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (36516) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (36718) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (36945) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (37172) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (37399) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (37626) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (37828) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (38055) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (38282) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (38509) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (38736) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (38963) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (39190) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (39397) node_b:  87 cm | btn 0 | CERRADO[0m
+[0;32mI (39624) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (39851) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (40078) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (40285) node_b:  88 cm | btn 0 | CERRADO[0m
+[0;32mI (40492) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (40719) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (40926) node_b:  87 cm | btn 0 | CERRADO[0m
+[0;32mI (41133) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (41360) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (41567) node_b:  87 cm | btn 0 | CERRADO[0m
+[0;32mI (41770) node_b:  13 cm | btn 0 | CERRADO[0m
+[0;32mI (41974) node_b:  30 cm | btn 0 | CERRADO[0m
+[0;32mI (42201) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (42428) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (42655) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (42882) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (43109) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (43336) node_b:   0 cm | btn 1 | ACCESO[0m
+[0;32mI (43543) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (43750) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (43957) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (44164) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (44371) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (44578) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (44785) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (44988) node_b:  13 cm | btn 0 | ACCESO[0m
+[0;32mI (45195) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (45402) node_b:  86 cm | btn 1 | ACCESO[0m
+[0;32mI (45629) node_b:   0 cm | btn 0 | ACCESO[0m
+[0;32mI (45836) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (46043) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (46250) node_b:  85 cm | btn 0 | ACCESO[0m
+[0;32mI (46457) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (46664) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (46871) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (47078) node_b:  85 cm | btn 0 | ACCESO[0m
+[0;32mI (47285) node_b:  87 cm | btn 0 | ACCESO[0m
+[0;32mI (47488) node_b:  13 cm | btn 0 | ACCESO[0m
+[0;32mI (47695) node_b:  87 cm | btn 0 | ACCESO[0m
+[0;32mI (47902) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (48129) node_b:   0 cm | btn 0 | ACCESO[0m
+[0;32mI (48336) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (48543) node_b:  86 cm | btn 0 | CERRADO[0m
+[0;32mI (48770) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (48997) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (49224) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (49431) node_b:  88 cm | btn 0 | CERRADO[0m
+[0;32mI (49658) node_b:   0 cm | btn 1 | ACCESO[0m
+[0;32mI (49865) node_b:  85 cm | btn 0 | ACCESO[0m
+[0;32mI (50068) node_b:  14 cm | btn 0 | ACCESO[0m
+[0;32mI (50275) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (50482) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (50709) node_b:   0 cm | btn 0 | ACCESO[0m
+[0;32mI (50916) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (51123) node_b:  87 cm | btn 0 | ACCESO[0m
+[0;32mI (51330) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (51537) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (51744) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (51951) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (52158) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (52365) node_b:  86 cm | btn 0 | ACCESO[0m
+[0;32mI (52568) node_b:  14 cm | btn 0 | ACCESO[0m
+[0;32mI (52775) node_b:  87 cm | btn 0 | CERRADO[0m
+[0;32mI (53002) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (53229) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (53456) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (53683) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (53910) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (54137) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (54364) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (54591) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (54818) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (55045) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (55248) node_b:  13 cm | btn 0 | CERRADO[0m
+[0;32mI (55475) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (55679) node_b:  36 cm | btn 0 | CERRADO[0m
+[0;32mI (55906) node_b:   0 cm | btn 0 | CERRADO[0m
+[0;32mI (56108) node_b:   1 cm | btn 0 | CERRADO[0m
+[0;32mI (56335) node_b:   0 cm | btn 0 | CERRADO[0m

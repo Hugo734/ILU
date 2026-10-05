@@ -1,0 +1,319 @@
+Command: /home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python /home/champagnepapi/esp/esp-idf/tools/idf_monitor.py -p /dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /home/champagnepapi/Documents/ILU/node_b/build/node_b.elf /home/champagnepapi/Documents/ILU/node_b/build/bootloader/bootloader.elf -m '/home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python' '/home/champagnepapi/esp/esp-idf/tools/idf.py' '-C' 'node_b' '-p' '/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0'
+ Loaded app from partition at offset 0x10000
+[0;32mI (157) boot: Disabling RNG early entropy source...[0m
+[0;32mI (169) cpu_st�ets Jul 29 2019 12:21:46[0m
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Oct  4 2026 10:58:42[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (33) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (37) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (44) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (77) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=098f0h ( 39152) map[0m
+[0;32mI (101) esp_image: segment 1: paddr=00019918 vaddr=3ffb0000 size=02834h ( 10292) load[0m
+[0;32mI (106) esp_image: segment 2: paddr=0001c154 vaddr=40080000 size=03ec4h ( 16068) load[0m
+[0;32mI (112) esp_image: segment 3: paddr=00020020 vaddr=400d0020 size=10640h ( 67136) map[0m
+[0;32mI (136) esp_image: segment 4: paddr=00030668 vaddr=40083ec4 size=08fa8h ( 36776) load[0m
+[0;32mI (151) esp_image: segment 5: paddr=00039618 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (157) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (157) boot: Disabling RNG early entropy source...[0m
+[0;32mI (169) cpu_start: Multicore app[0m
+[0;32mI (177) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (177) cpu_start: Pro cpu start user code[0m
+[0;32mI (177) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (179) app_init: Application information:[0m
+[0;32mI (183) app_init: Project name:     node_b[0m
+[0;32mI (187) app_init: App version:      1665dce-dirty[0m
+[0;32mI (191) app_init: Compile time:     Oct  4 2026 15:56:22[0m
+[0;32mI (196) app_init: ELF file SHA256:  f685a56f0...[0m
+[0;32mI (200) app_init: ESP-IDF:          v5.5.5[0m
+[0;32mI (204) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (208) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (212) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (216) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (222) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (227) heap_init: At 3FFB3100 len 0002CF00 (179 KiB): DRAM[0m
+[0;32mI (232) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (238) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (243) heap_init: At 4008CE6C len 00013194 (76 KiB): IRAM[0m
+[0;32mI (250) spi_flash: detected chip: generic[0m
+[0;32mI (252) spi_flash: flash io: dio[0m
+[0;32mI (256) main_task: Started on CPU0[0m
+[0;32mI (258) main_task: Calling app_main()[0m
+[0;32mI (261) node_b: Nodo b | protocolo v1[0m
+[0;32mI (274) node_b: PULSO-CORTO |     9 us |   0 cm[0m
+[0;32mI (474) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (674) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (874) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (1074) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (1274) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (1474) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (1674) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (1874) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (2074) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (2274) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (2474) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (2674) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (2880) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (3091) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (3291) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (3491) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (3691) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (3891) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (4097) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (4300) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (4500) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (4700) node_b: PULSO-CORTO |     8 us |   0 cm[0m
+[0;32mI (4900) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (5100) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (5300) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (5500) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (5700) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (5900) node_b: PULSO-CORTO |     6 us |   0 cm[0m
+[0;32mI (6100) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (6300) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (6509) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (6709) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (6909) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (7115) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (7318) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (7526) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (7726) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (7927) node_b: PULSO-CORTO |    11 us |   0 cm[0m
+[0;32mI (8127) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (8327) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (8527) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (8727) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (8927) node_b: PULSO-CORTO |     9 us |   0 cm[0m
+[0;32mI (9127) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (9327) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (9527) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (9727) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (9927) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (10135) node_b: OK          |  7920 us | 136 cm[0m
+[0;32mI (10336) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (10544) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (10744) node_b: PULSO-CORTO |     7 us |   0 cm[0m
+[0;32mI (10950) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (11161) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (11361) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (11561) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (11767) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (11970) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (12170) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (12370) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (12570) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (12770) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (12970) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (13179) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (13379) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (13579) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (13779) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (13979) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (14179) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (14379) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (14579) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (14779) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (14979) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (15179) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (15379) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (15579) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (15787) node_b: OK          |  7943 us | 136 cm[0m
+[0;32mI (15988) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (16188) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (16388) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (16588) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (16788) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (16996) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (17204) node_b: OK          |  7957 us | 137 cm[0m
+[0;32mI (17405) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (17605) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (17805) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (18005) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (18205) node_b: PULSO-CORTO |     6 us |   0 cm[0m
+[0;32mI (18405) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (18614) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (18814) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (19014) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (19214) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (19414) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (19614) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (19814) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (20016) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (20221) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (20422) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (20622) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (20822) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (21022) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (21222) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (21422) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (21622) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (21822) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (22022) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (22222) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (22422) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (22622) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (22822) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (23022) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (23222) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (23422) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (23622) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (23822) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (24022) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (24231) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (24431) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (24631) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (24831) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (25031) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (25231) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (25431) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (25631) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (25831) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (26031) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (26231) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (26431) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (26631) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (26831) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (27038) node_b: OK          |  7931 us | 136 cm[0m
+[0;32mI (27247) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (27447) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (27647) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (27847) node_b: PULSO-CORTO |     6 us |   0 cm[0m
+[0;32mI (28047) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (28247) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (28447) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (28647) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (28854) node_b: OK          |  7946 us | 137 cm[0m
+[0;32mI (29063) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (29263) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (29463) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (29663) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (29863) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (30070) node_b: OK          |  7930 us | 136 cm[0m
+[0;32mI (30279) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (30479) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (30679) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (30879) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (31079) node_b: PULSO-CORTO |    18 us |   0 cm[0m
+[0;32mI (31284) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (31486) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (31686) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (31886) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (32086) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (32286) node_b: PULSO-CORTO |     7 us |   0 cm[0m
+[0;32mI (32494) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (32694) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (32894) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (33094) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (33294) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (33499) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (33701) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (33901) node_b: PULSO-CORTO |     6 us |   0 cm[0m
+[0;32mI (34101) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (34301) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (34509) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (34709) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (34909) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (35109) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (35309) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (35509) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (35714) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (35916) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (36116) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (36316) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (36516) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (36716) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (36916) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (37116) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (37324) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (37524) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (37724) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (37924) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (38124) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (38324) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (38524) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (38729) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (38931) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (39140) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (39340) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (39540) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (39740) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (39945) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (40156) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (40356) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (40556) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (40756) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (40956) node_b: PULSO-CORTO |     7 us |   0 cm[0m
+[0;32mI (41161) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (41372) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (41572) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (41772) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (41972) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (42172) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (42379) node_b: OK          |  7930 us | 136 cm[0m
+[0;32mI (42588) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (42788) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (42988) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (43188) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (43388) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (43588) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (43788) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (43988) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (44188) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (44388) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (44593) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (44795) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (44995) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (45195) node_b: PULSO-CORTO |     6 us |   0 cm[0m
+[0;32mI (45395) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (45595) node_b: PULSO-CORTO |     0 us |   0 cm[0m
+[0;32mI (45795) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (45995) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (46203) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (46403) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (46603) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (46803) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (47003) node_b: PULSO-CORTO |     6 us |   0 cm[0m
+[0;32mI (47203) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (47403) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (47603) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (47803) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (48003) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (48203) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (48403) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (48608) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (48810) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (49019) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (49219) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (49419) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (49619) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (49819) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (50019) node_b: PULSO-CORTO |     5 us |   0 cm[0m
+[0;32mI (50224) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (50426) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (50635) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (50835) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (51035) node_b: PULSO-CORTO |     2 us |   0 cm[0m
+[0;32mI (51235) node_b: PULSO-CORTO |     1 us |   0 cm[0m
+[0;32mI (51435) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (51635) node_b: PULSO-CORTO |     3 us |   0 cm[0m
+[0;32mI (51840) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (52042) node_b: PULSO-CORTO |     4 us |   0 cm[0m
+[0;32mI (52242) node_b: PULSO-CORTO |     7 us |   0 cm[0m
