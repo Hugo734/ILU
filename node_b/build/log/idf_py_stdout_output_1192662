@@ -1,0 +1,225 @@
+Command: /home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python /home/champagnepapi/esp/esp-idf/tools/idf_monitor.py -p /dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /home/champagnepapi/Documents/ILU/node_b/build/node_b.elf /home/champagnepapi/Documents/ILU/node_b/build/bootloader/bootloader.elf -m '/home/champagnepapi/.espressif/python_env/idf5.5_py3.10_env/bin/python' '/home/champagnepapi/esp/esp-idf/tools/idf.py' '-C' 'node_b' '-p' '/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a041be62e9cef118535af9061ce3355-if00-port0'
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Oct  4 2026 10:58:42[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (33) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (37) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (44) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (77) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=098f0h ( 39152) map[0m
+[0;32mI (101) esp_image: segment 1: paddr=00019918 vaddr=3ffb0000 size=02834h ( 10292) load[0m
+[0;32mI (106) esp_image: segment 2: paddr=0001c154 vaddr=40080000 size=03ec4h ( 16068) load[0m
+[0;32mI (112) esp_image: segment 3: paddr=00020020 vaddr=400d0020 size=10640h ( 67136) map[0m
+[0;32mI (136) esp_image: segment 4: paddr=00030668 vaddr=40083ec4 size=08fa8h ( 36776) load[0m
+[0;32mI (151) esp_image: segment 5: paddr=00039618 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (157) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (157) boot: Disabling RNG early entropy source...[0m
+[0;32mI (169) cpu_start: Multicore app[0m
+[0;32mI (177) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (177) cpu_start: Pro cpu start user code[0m
+[0;32mI (177) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (179) app_init: Application information:[0m
+[0;32mI (183) app_init: Project name:     node_b[0m
+[0;32mI (187) app_init: App version:      1665dce-dirty[0m
+[0;32mI (191) app_init: Compile time:     Oct  4 2026 15:56:22[0m
+[0;32mI (196) app_init: ELF file SHA256:  953b634f8...[0m
+[0;32mI (200) app_init: ESP-IDF:          v5.5.5[0m
+[0;32mI (204) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (208) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (212) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (216) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (222) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (227) heap_init: At 3FFB3100 len 0002CF00 (179 KiB): DRAM[0m
+[0;32mI (232) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (238) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (243) heap_init: At 4008CE6C len 00013194 (76 KiB): IRAM[0m
+[0;32mI (250) spi_flash: detected chip: generic[0m
+[0;32mI (252) spi_flash: flash io: dio[0m
+[0;32mI (256) main_task: Started on CPU0[0m
+[0;32mI (258) main_task: Calling app_main()[0m
+[0;32mI (261) node_b: Nodo b | protocolo v1[0m
+[0;32mI (268) node_b: OK          |   453 us |   7 cm[0m
+[0;32mI (471) node_b: OK          |   454 us |   7 cm[0m
+[0;32mI (673) node_b: OK          |   267 us |   4 cm[0m
+[0;32mI (875) node_b: OK          |   360 us |   6 cm[0m
+[0;32mI (1077) node_b: OK          |   173 us |   2 cm[0m
+[0;32mI (1279) node_b: OK          |   173 us |   2 cm[0m
+[0;32mI (1481) node_b: OK          |   191 us |   3 cm[0m
+[0;32mI (1683) node_b: OK          |   117 us |   2 cm[0m
+[0;32mI (1885) node_b: OK          |   135 us |   2 cm[0m
+[0;32mI (2087) node_b: OK          |   229 us |   3 cm[0m
+[0;32mI (2289) node_b: OK          |   229 us |   3 cm[0m
+[0;32mI (2491) node_b: OK          |   247 us |   4 cm[0m
+[0;32mI (2693) node_b: OK          |   286 us |   4 cm[0m
+[0;32mI (2895) node_b: OK          |   360 us |   6 cm[0m
+[0;32mI (3097) node_b: OK          |   397 us |   6 cm[0m
+[0;32mI (3299) node_b: OK          |   434 us |   7 cm[0m
+[0;32mI (3501) node_b: OK          |   435 us |   7 cm[0m
+[0;32mI (3703) node_b: OK          |   435 us |   7 cm[0m
+[0;32mI (3905) node_b: OK          |   550 us |   9 cm[0m
+[0;32mI (4107) node_b: OK          |   571 us |   9 cm[0m
+[0;32mI (4309) node_b: OK          |   630 us |  10 cm[0m
+[0;32mI (4513) node_b: OK          |   886 us |  15 cm[0m
+[0;32mI (4715) node_b: OK          |   591 us |  10 cm[0m
+[0;32mI (4919) node_b: OK          |   734 us |  12 cm[0m
+[0;32mI (5121) node_b: OK          |   435 us |   7 cm[0m
+[0;32mI (5323) node_b: OK          |   434 us |   7 cm[0m
+[0;32mI (5525) node_b: OK          |   378 us |   6 cm[0m
+[0;32mI (5727) node_b: OK          |   341 us |   5 cm[0m
+[0;32mI (5929) node_b: OK          |   323 us |   5 cm[0m
+[0;32mI (6131) node_b: OK          |   379 us |   6 cm[0m
+[0;32mI (6333) node_b: OK          |   398 us |   6 cm[0m
+[0;32mI (6535) node_b: OK          |   454 us |   7 cm[0m
+[0;32mI (6737) node_b: OK          |   551 us |   9 cm[0m
+[0;32mI (6939) node_b: OK          |   610 us |  10 cm[0m
+[0;32mI (7142) node_b: OK          |   609 us |  10 cm[0m
+[0;32mI (7345) node_b: OK          |   649 us |  11 cm[0m
+[0;32mI (7549) node_b: OK          |   734 us |  12 cm[0m
+[0;32mI (7752) node_b: OK          |   768 us |  13 cm[0m
+[0;32mI (7955) node_b: OK          |   747 us |  12 cm[0m
+[0;32mI (8158) node_b: OK          |  1001 us |  17 cm[0m
+[0;32mI (8361) node_b: OK          |  1001 us |  17 cm[0m
+[0;32mI (8564) node_b: OK          |  1001 us |  17 cm[0m
+[0;32mI (8767) node_b: OK          |  1001 us |  17 cm[0m
+[0;32mI (8970) node_b: OK          |  1001 us |  17 cm[0m
+[0;32mI (9173) node_b: OK          |  1002 us |  17 cm[0m
+[0;32mI (9376) node_b: OK          |  1001 us |  17 cm[0m
+[0;32mI (9579) node_b: OK          |  1002 us |  17 cm[0m
+[0;32mI (9782) node_b: OK          |  1002 us |  17 cm[0m
+[0;32mI (9985) node_b: OK          |  1001 us |  17 cm[0m
+[0;32mI (10188) node_b: OK          |   964 us |  16 cm[0m
+[0;32mI (10394) node_b: OK          |  3742 us |  64 cm[0m
+[0;32mI (10601) node_b: OK          |  4791 us |  82 cm[0m
+[0;32mI (10818) node_b: OK          | 15328 us | 264 cm[0m
+[0;32mI (11035) node_b: OK          | 14921 us | 257 cm[0m
+[0;32mI (11249) node_b: OK          | 12579 us | 216 cm[0m
+[0;32mI (11477) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (11694) node_b: OK          | 15218 us | 262 cm[0m
+[0;32mI (11921) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (12138) node_b: OK          | 15283 us | 263 cm[0m
+[0;32mI (12355) node_b: OK          | 15050 us | 259 cm[0m
+[0;32mI (12572) node_b: OK          | 15228 us | 262 cm[0m
+[0;32mI (12789) node_b: OK          | 15400 us | 265 cm[0m
+[0;32mI (13016) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (13243) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (13470) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (13697) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (13924) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (14127) node_b: OK          |   983 us |  16 cm[0m
+[0;32mI (14330) node_b: OK          |  1409 us |  24 cm[0m
+[0;32mI (14533) node_b: OK          |   906 us |  15 cm[0m
+[0;32mI (14735) node_b: OK          |   417 us |   7 cm[0m
+[0;32mI (14937) node_b: OK          |   571 us |   9 cm[0m
+[0;32mI (15139) node_b: OK          |   454 us |   7 cm[0m
+[0;32mI (15341) node_b: OK          |   416 us |   7 cm[0m
+[0;32mI (15543) node_b: OK          |   398 us |   6 cm[0m
+[0;32mI (15745) node_b: OK          |   360 us |   6 cm[0m
+[0;32mI (15947) node_b: OK          |   472 us |   8 cm[0m
+[0;32mI (16151) node_b: OK          |  1749 us |  30 cm[0m
+[0;32mI (16354) node_b: OK          |   945 us |  16 cm[0m
+[0;32mI (16557) node_b: OK          |  1021 us |  17 cm[0m
+[0;32mI (16760) node_b: OK          |  1154 us |  19 cm[0m
+[0;32mI (16963) node_b: OK          |  1287 us |  22 cm[0m
+[0;32mI (17166) node_b: OK          |  1324 us |  22 cm[0m
+[0;32mI (17369) node_b: OK          |  1342 us |  23 cm[0m
+[0;32mI (17572) node_b: OK          |  1375 us |  23 cm[0m
+[0;32mI (17775) node_b: OK          |  1462 us |  25 cm[0m
+[0;32mI (17978) node_b: OK          |  1513 us |  26 cm[0m
+[0;32mI (18181) node_b: OK          |  1616 us |  27 cm[0m
+[0;32mI (18385) node_b: OK          |  1702 us |  29 cm[0m
+[0;32mI (18590) node_b: OK          |  1765 us |  30 cm[0m
+[0;32mI (18794) node_b: OK          |  1934 us |  33 cm[0m
+[0;32mI (18998) node_b: OK          |  1965 us |  33 cm[0m
+[0;32mI (19202) node_b: OK          |  2010 us |  34 cm[0m
+[0;32mI (19406) node_b: OK          |  2104 us |  36 cm[0m
+[0;32mI (19610) node_b: OK          |  2200 us |  37 cm[0m
+[0;32mI (19814) node_b: OK          |  2377 us |  40 cm[0m
+[0;32mI (20018) node_b: OK          |  2432 us |  41 cm[0m
+[0;32mI (20222) node_b: OK          |  2600 us |  44 cm[0m
+[0;32mI (20427) node_b: OK          |  2635 us |  45 cm[0m
+[0;32mI (20632) node_b: OK          |  2683 us |  46 cm[0m
+[0;32mI (20838) node_b: OK          |  2981 us |  51 cm[0m
+[0;32mI (21053) node_b: OK          | 12776 us | 220 cm[0m
+[0;32mI (21258) node_b: OK          |  3053 us |  52 cm[0m
+[0;32mI (21475) node_b: OK          | 15268 us | 263 cm[0m
+[0;32mI (21680) node_b: OK          |  3100 us |  53 cm[0m
+[0;32mI (21885) node_b: OK          |  2961 us |  51 cm[0m
+[0;32mI (22090) node_b: OK          |  3113 us |  53 cm[0m
+[0;32mI (22307) node_b: OK          | 15096 us | 260 cm[0m
+[0;32mI (22511) node_b: OK          |  2599 us |  44 cm[0m
+[0;32mI (22716) node_b: OK          |  2133 us |  36 cm[0m
+[0;32mI (22919) node_b: OK          |  1718 us |  29 cm[0m
+[0;32mI (23123) node_b: OK          |  1324 us |  22 cm[0m
+[0;32mI (23326) node_b: OK          |   965 us |  16 cm[0m
+[0;32mI (23529) node_b: OK          |   788 us |  13 cm[0m
+[0;32mI (23731) node_b: OK          |   649 us |  11 cm[0m
+[0;32mI (23934) node_b: OK          |   571 us |   9 cm[0m
+[0;32mI (24136) node_b: OK          |   512 us |   8 cm[0m
+[0;32mI (24338) node_b: OK          |   435 us |   7 cm[0m
+[0;32mI (24540) node_b: OK          |   434 us |   7 cm[0m
+[0;32mI (24742) node_b: OK          |   323 us |   5 cm[0m
+[0;32mI (24944) node_b: OK          |   324 us |   5 cm[0m
+[0;32mI (25146) node_b: OK          |   211 us |   3 cm[0m
+[0;32mI (25348) node_b: OK          |   155 us |   2 cm[0m
+[0;32mI (25550) node_b: OK          |   154 us |   2 cm[0m
+[0;32mI (25752) node_b: OK          |   117 us |   2 cm[0m
+[0;32mI (25954) node_b: OK          |   155 us |   2 cm[0m
+[0;32mI (26156) node_b: OK          |   248 us |   4 cm[0m
+[0;32mI (26358) node_b: OK          |   551 us |   9 cm[0m
+[0;32mI (26560) node_b: OK          |   630 us |  10 cm[0m
+[0;32mI (26764) node_b: OK          |   747 us |  12 cm[0m
+[0;32mI (26967) node_b: OK          |  1001 us |  17 cm[0m
+[0;32mI (27169) node_b: OK          |   397 us |   6 cm[0m
+[0;32mI (27371) node_b: OK          |   229 us |   3 cm[0m
+[0;32mI (27573) node_b: OK          |   491 us |   8 cm[0m
+[0;32mI (27776) node_b: OK          |   768 us |  13 cm[0m
+[0;32mI (27979) node_b: OK          |   747 us |  12 cm[0m
+[0;32mI (28181) node_b: OK          |   491 us |   8 cm[0m
+[0;32mI (28383) node_b: OK          |   378 us |   6 cm[0m
+[0;32mI (28585) node_b: OK          |   267 us |   4 cm[0m
+[0;32mI (28787) node_b: OK          |   631 us |  10 cm[0m
+[0;32mI (28991) node_b: OK          |   944 us |  16 cm[0m
+[0;32mI (29194) node_b: OK          |   926 us |  15 cm[0m
+[0;32mI (29396) node_b: OK          |   491 us |   8 cm[0m
+[0;32mI (29598) node_b: OK          |   285 us |   4 cm[0m
+[0;32mI (29800) node_b: OK          |   173 us |   2 cm[0m
+[0;32mI (30002) node_b: OK          |   649 us |  11 cm[0m
+[0;32mI (30206) node_b: OK          |  1022 us |  17 cm[0m
+[0;32mI (30409) node_b: OK          |   827 us |  14 cm[0m
+[0;32mI (30611) node_b: OK          |   304 us |   5 cm[0m
+[0;32mI (30813) node_b: OK          |   154 us |   2 cm[0m
+[0;32mI (31015) node_b: OK          |   551 us |   9 cm[0m
+[0;32mI (31218) node_b: OK          |   965 us |  16 cm[0m
+[0;32mI (31421) node_b: OK          |   905 us |  15 cm[0m
+[0;32mI (31623) node_b: OK          |   491 us |   8 cm[0m
+[0;32mI (31850) node_b: NO-BAJA     |     0 us |   0 cm[0m
+[0;32mI (32067) node_b: OK          | 15038 us | 259 cm[0m
+[0;32mI (32284) node_b: OK          | 15064 us | 259 cm[0m
+[0;32mI (32501) node_b: OK          | 15067 us | 259 cm[0m
+[0;32mI (32718) node_b: OK          | 15094 us | 260 cm[0m
+[0;32mI (32935) node_b: OK          | 14902 us | 256 cm[0m
+[0;32mI (33152) node_b: OK          | 14912 us | 257 cm[0m
+[0;32mI (33356) node_b: OK          |  2119 us |  36 cm[0m
+[0;32mI (33559) node_b: OK          |   926 us |  15 cm[0m
+[0;32mI (33762) node_b: OK          |   847 us |  14 cm[0m
+[0;32mI (33965) node_b: OK          |   846 us |  14 cm[0m
+[0;32mI (34168) node_b: OK          |   768 us |  13 cm[0m
+[0;32mI (34370) node_b: OK          |   571 us |   9 cm[0m
