@@ -6,25 +6,27 @@
 
 static const char *TAG = "node_b";
 
-static const uint16_t CERCA_MIN = 2;
-static const uint16_t CERCA_MAX = 10;
+static const uint16_t CERCA_MIN = 4;
+static const uint16_t CERCA_MAX = 15;
 static const uint32_t ACCESO_MS = 3000;
 
 extern "C" void app_main(void)
 {
-    HalBEsp32 hal(GPIO_NUM_5, GPIO_NUM_18, GPIO_NUM_4, GPIO_NUM_13,
-                  GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27);
+    HalBEsp32 hal(GPIO_NUM_5, GPIO_NUM_18,  /* button */ GPIO_NUM_4, /* RGB LED */ GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27 
+    );
     hal.init();
 
-    // Prueba de canales. Borra este bloque cuando el LED ya de los colores
-    // correctos.
-    ESP_LOGW(TAG, "prueba: ROJO / VERDE / AMARILLO, 1.5 s cada uno");
+    // First test of the channels, Just to check that the LED is working as it should.
+    ESP_LOGW(TAG, "First test of the channels, Just to check that the LED is working properly");
+    ESP_LOGW(TAG, "Test: RED / GREEN / YELLOW, 1.5 s each"); 
     hal.setLed(Led::Red);    vTaskDelay(pdMS_TO_TICKS(1500));
     hal.setLed(Led::Green);  vTaskDelay(pdMS_TO_TICKS(1500));
     hal.setLed(Led::Yellow); vTaskDelay(pdMS_TO_TICKS(1500));
 
     bool     acceso   = false;
     uint32_t t_acceso = 0;
+
+
 
     while (true) {
         uint32_t now = hal.nowMs();
