@@ -17,8 +17,8 @@ them, and review what happened.
 | MAC | `78:42:1c:68:44:98` | `f4:65:0b:c0:e0:a4` |
 | Sensor | PIR HC-SR501 — motion inside | HC-SR04 — distance at the door |
 | Credential | — | pushbutton (RFID reader if time allows) |
-| Actuator | active buzzer — alarm | servo SG90 — the door |
-| Status indicator | RGB LED | RGB LED |
+| Actuator | active buzzer — alarm | RGB LED — door state (node_b's only physical output) |
+| Status indicator | RGB LED | — (the RGB LED above is the actuator) |
 | Radio | ESP-NOW (peer) + Wi-Fi (MQTT) | ESP-NOW (peer) + Wi-Fi (MQTT) |
 
 **node_b is the door. node_a is the protected room.** The directory names `node_a` and `node_b`
@@ -50,13 +50,12 @@ firmware.
 | Node ↔ platform | **`esp-mqtt`** to a **Mosquitto** broker | Event-driven client, native Last Will and Testament, automatic reconnection |
 | Wire format, node ↔ node | **Packed binary struct** | Compact on a constrained link, and explicit about byte layout |
 | Wire format, node ↔ platform | **JSON** | Human-readable, inspectable live during the evaluation |
-| Servo drive | **LEDC** (`driver/ledc.h`), 50 Hz, 13-bit | Hardware PWM; generating a 20 ms pulse train in software would occupy the CPU permanently |
 | Platform server | **Python 3 · Flask · Flask-SocketIO · paho-mqtt** | Stack I have built before and can explain line by line |
 | Storage | **SQLite** | Single file, no server to run, queryable with plain SQL during the evaluation |
 | Dashboard | Server-rendered HTML + **WebSocket** push | No build step, no framework to justify |
 | Host tests | **CMake + CTest**, with ASan and UBSan | The pure control logic compiles and runs on the laptop |
 
-**Demonstrated on hardware today:** ESP-NOW and UART.
+**Demonstrated on hardware by 4 October:** ESP-NOW and UART.
 **Planned and not yet demonstrated:** MQTT, and I²C/SPI only if the optional display and card
 reader make it into scope.
 
@@ -66,6 +65,11 @@ The application-layer message protocol is my own and is specified in `docs/proto
 
 ## Progress — weekend of 4 October
 
+> **Status on 6 October.** The servo was removed from node_b's source after the hardware
+> results below were recorded (see Decisions). That change is committed but **has not been
+> compiled**; no build has run since. The results below were obtained before it, and the
+> current node_b source is not claimed to work.
+
 ### Verified on hardware
 
 | Node | Item | Evidence |
@@ -73,16 +77,17 @@ The application-layer message protocol is my own and is specified in `docs/proto
 | A ↔ B | ESP-NOW bidirectional peer link | cross-matched uptimes in both monitors, no lost link-layer ACKs |
 | B | HC-SR04 distance over a 1 kΩ/2 kΩ divider | ±1 cm steady, responds to a hand, 2 cm floor as the datasheet states |
 | B | Credential pushbutton, internal pull-up | 3 s access window, confirmed to the millisecond in the log |
-| B | RGB status LED — red / yellow / green | all three colours correct |
+| B | RGB LED — red / yellow / green | all three colours correct |
 | both | Wi-Fi station mode with an explicit, deterministic configuration | MAC printed matches the eFuse |
 
 ### Not yet working
 
 | Item | State |
 |---|---|
-| Servo SG90 | LEDC pulse is generated; the motor does not respond. Common ground between the MB-102 and the ESP32 is the first thing to rule out |
 | PIR HC-SR501 | wired on node A, not yet exercised |
 | Buzzer | not connected; its current must be measured before driving it from a GPIO |
+
+Everything not listed as verified above is designed, not built.
 
 ## Wiring
 
@@ -100,9 +105,7 @@ Supersedes the pin table in `cableado.html`, which is stale.
 | HC-SR04 `ECHO` | B | 18 | **through a 1 kΩ / 2 kΩ divider** — see below |
 | HC-SR04 `VCC` | B | — | 5 V from the ESP32 board, ~15 mA |
 | Credential button | B | 4 | one leg to the pin, the other to GND. Internal pull-up, **no external resistor**. Pressed reads 0 |
-| Servo signal | B | 13 | signal wire only. LEDC, 50 Hz, 13-bit resolution |
-| Servo power | B | — | **MB-102, never the ESP32** |
-| Status LED R / G / B | B | 25 / 26 / 27 | 220 Ω in series per colour, common cathode to GND |
+| RGB LED R / G / B | B | 25 / 26 / 27 | 220 Ω in series per colour, common cathode to GND |
 | PIR output | A | 32 | direct. The HC-SR501 output is already 3.3 V — no divider needed |
 | PIR `VCC` | A | — | 5 V |
 | Buzzer | A | 14 | pending — its current must be measured before driving it from a GPIO |
@@ -133,29 +136,45 @@ high-level input voltage (0.75 × VDD, Table 14) — so the pulse is both safe a
 Swapping the two resistors yields 1.67 V, which damages nothing and never registers as a logic
 high.
 
-### Power domains and the MB-102
+### Power and grounding
 
-```
-USB      →  ESP32  +  HC-SR04
-MB-102   →  servo only
-ground   →  bridged between the two domains
-```
+node_b runs entirely from the ESP32 board: 5 V for the HC-SR04, 3.3 V for the logic. Nothing
+is powered from the MB-102 any more. Two lessons from it are kept, because they apply to any
+actuator added later:
 
-Only signals and ground cross between the domains, never supply. The servo draws up to ~700 mA
-on start-up; taken from the board it collapses the rail and resets the ESP32, and the symptom
-reads as a firmware bug.
+**Star grounding.** An actuator's return current goes back to its own supply. The grounds of
+the two supplies meet at one point, and that link carries only the signal reference, never
+load current. Return current through the shared ground wire shifts the reference the ESP32
+sees, and the symptom reads as a firmware bug.
 
-**The MB-102 does not appear in the Wokwi diagram.** Wokwi has no part for it, and it models
-neither current nor supply voltage, so a servo drawn on the board's rails simulates perfectly
-and would simply misrepresent the real circuit. The diagram is therefore the logical netlist —
-which pin connects to which — and the power split is documented here and in `cableado.html`,
-which is where it is actually needed at the bench.
+**MB-102 rails are split at the middle.** On the breadboard the top and bottom power rails
+are not bridged from the factory. A board wired across the gap gets no supply and no error
+message. This cost hours of debugging because nothing reports it.
 
 ---
 
-## Decisions taken this weekend
+## Decisions taken 4–6 October
 
 Full rationale in `docs/decisions.md`. The ones that shaped the code:
+
+**The servo is out of scope for now (6 October).** On the night of 5 October the MB-102
+breadboard supply burned while the SG90 was stalled against an end stop. The probable cause:
+the LEDC pulse range started at 0.5 ms, commanding an angle the servo could not reach, so it
+kept pushing and drew roughly 700 mA continuously through a linear regulator fed at 12 V —
+about 4.9 W dissipated in a part rated near 1 W. The cause is probable, not confirmed. With
+two days to delivery, replacing the supply was a worse risk than dropping the actuator, and
+the servo will not be reconsidered until both nodes and the platform work end to end.
+node_b is now HC-SR04 (sensor), RGB LED (actuator, its only observable output) and
+pushbutton (credential). `setServoAngle()` is gone from `IHalB`, the `HalBEsp32` constructor
+takes no servo pin, and the LEDC code is removed. Committed, not compiled.
+
+**The repository ignores build output (6 October).** The old `.gitignore` was written for an
+abandoned PlatformIO layout and ignored nothing real, so 2911 build artifacts were tracked
+and GitHub Linguist reported "CMake 39%, Assembly 37%, C++ 5%". It is rewritten for ESP-IDF;
+`node_a/build/`, `node_b/build/` and `node_b/sdkconfig` are untracked. History was
+deliberately not rewritten: a `filter-repo` and force-push two days before delivery is not
+worth the risk, and Linguist reads the current tree. A bare `secrets.h` pattern now matches at
+any depth; the old pattern pointed at a path that does not exist.
 
 **An input pin must be able to define its idle level.** The PIR moved from GPIO 34 to GPIO 32 so
 an internal pull-down is available. GPIO 34–39 are type `I` in the datasheet (Table 2) and have
@@ -197,13 +216,13 @@ These paths run over ESP-NOW and must work with the dashboard closed and the rou
 | Trigger | Node | Effect on node_a (room) | Effect on node_b (door) |
 |---|---|---|---|
 | Someone approaches, distance below threshold | B | amber | amber |
-| Credential accepted | B | green, alarm silent | green, **servo opens** |
-| Access window expires | B | red | red, **servo closes** |
-| **Motion with no credential** | A | red flashing, **buzzer sounds** | red flashing, **servo locked** |
-| Three heartbeats missed | both | blue, buzzer silent | blue, servo closed |
+| Credential accepted | B | green, alarm silent | green |
+| Access window expires | B | red | red |
+| **Motion with no credential** | A | red flashing, **buzzer sounds** | red flashing |
+| Three heartbeats missed | both | blue, buzzer silent | blue |
 
 The fourth row is the headline interaction: one gesture in front of node A, and two boards react
-at once — one with sound, the other with motion — with no router and no platform involved.
+at once — one with sound, the other with light — with no router and no platform involved.
 
 ### State machine
 
@@ -242,7 +261,6 @@ Both nodes run the same five named states and react with whatever they have conn
 |---|---|---|
 | `ARMED` | both — the broadcast one | 0 / 1 |
 | `GRACE_S` | both | 5 – 60 s |
-| `SERVO_OPEN_DEG` | B | 0 – 180 |
 | `ACCESS_HOLD_S` | B | 1 – 30 s |
 | `DIST_THRESHOLD_CM` | B | 5 – 200 |
 | `BUZZER_ENABLED` | A | 0 / 1 |
@@ -318,7 +336,7 @@ to open it with something that is not my own code.
    PIR ──┐                                              ┌── HC-SR04
          │   node_a — Room (ESP32)                      │   node_b — Door (ESP32)
          │   sense → FSM → actuate     ESP-NOW          │   sense → FSM → actuate
-buzzer ◄─┤   RGB LED              ◄──────────────►      ├─► servo · RGB LED
+buzzer ◄─┤   RGB LED              ◄──────────────►      ├─► RGB LED
          │                        packed binary frames  │   pushbutton
          │                                              │
          └──────────── Wi-Fi · MQTT (JSON) ─────────────┘
@@ -367,7 +385,7 @@ shared/
 node_a/
   main/                  main.cpp + hal_a_esp32 (PIR, buzzer, RGB LED)
 node_b/
-  main/                  main.cpp + hal_b_esp32 (HC-SR04, button, servo, RGB LED)
+  main/                  main.cpp + hal_b_esp32 (HC-SR04, button, RGB LED)
 platform/                Flask + Flask-SocketIO server, dashboard template, SQLite logger
 test/                    host tests for the pure control logic — CTest, no hardware
 images/                  circuit photographs and diagram exports
@@ -390,6 +408,9 @@ idf.py -C node_b -p /dev/serial/by-id/usb-Silicon_Labs_CP2102N_... build flash m
 idf.py -C node_a -p /dev/serial/by-id/usb-Silicon_Labs_CP2102_...  build flash monitor
 ```
 
+`sdkconfig` is no longer committed, so the first build on a fresh clone regenerates it.
+Copy `secrets.h.example` to `secrets.h` before building; `secrets.h` is git-ignored.
+
 Always address the boards by their `/dev/serial/by-id/` path. The `ttyUSB0` / `ttyUSB1` numbers
 are assigned in plug order and swap between sessions, and flashing the wrong board is silent.
 
@@ -407,7 +428,7 @@ Host tests and the platform: pending.
 | # | Requirement | Status |
 |---|---|---|
 | 1 | Two independent devices, own MCU, C/C++ | done |
-| 2 | Each node: ≥1 sensor and ≥1 actuator with observable output | node B sensor + LED done, servo pending; node A pending |
+| 2 | Each node: ≥1 sensor and ≥1 actuator with observable output | node B: HC-SR04 and RGB LED verified on hardware by 4 October, before the servo removal; current source not compiled. Node A pending |
 | 3 | Wireless node-to-node, ≥1 interaction without the platform | link verified, interaction designed not built |
 | 4 | Platform commands to one node and to both | not started |
 | 5 | ≥2 remotely controllable variables per node | designed, not built |
