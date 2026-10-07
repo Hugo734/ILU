@@ -1,5 +1,5 @@
-# ESP_PLATFORM lo define ESP-IDF. Dentro de un build de IDF esto es un
-# componente; fuera, una libreria normal que compila con g++.
+# ESP_PLATFORM is defined by ESP-IDF. Inside an IDF build this is a
+# component; outside it, a plain library that compiles with g++.
 set(CORE_SRCS protocol.cpp)
 
 if(ESP_PLATFORM)
