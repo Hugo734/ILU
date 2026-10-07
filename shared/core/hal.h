@@ -20,4 +20,7 @@ public:
     virtual ~IHalA() = default;
     virtual uint32_t nowMs() const = 0;
     virtual bool    motionDetected() = 0;
+    virtual void    setBuzzer(bool on) = 0;
+    virtual bool    alarmActive() = 0;  // read back from the pin, not from the flag
+    virtual void    setLed(Led c) = 0;
 };
