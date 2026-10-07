@@ -1,10 +1,10 @@
 #include "net.h"
 #include <string.h>
 #include <stdint.h>
+#include <atomic>
 #include "esp_now.h"
-#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -46,47 +46,41 @@ void net_init() {
 }
 
 // ---------------------------------------------------------------------------
-// ESP-NOW spike
+// ESP-NOW transport
 // ---------------------------------------------------------------------------
 
-// NOT the protocol.md frame yet. This only proves the link, the peer
-// registration and the callbacks. The real frame replaces this struct later.
-//
-// packed: without it the compiler inserts 3 padding bytes after `src` to align
-// `counter`. Sender and receiver are separate binaries, so any disagreement on
-// field offsets silently corrupts every field after the first.
-typedef struct __attribute__((packed)) {
-    uint8_t  src;        // 'A' or 'B'
-    uint32_t counter;
-    uint32_t uptime_ms;
-} SpikeMsg;
+// Room for a burst of motion edges while the main loop is busy; 8 x 10 bytes.
+static const UBaseType_t RX_QUEUE_LEN = 8;
 
-static_assert(sizeof(SpikeMsg) == 9, "SpikeMsg must stay 9 bytes on the wire");
+static uint8_t       s_peer_mac[6];
+static QueueHandle_t s_rx_queue = nullptr;
 
-static uint8_t s_peer_mac[6];
-static char    s_self_id;
+// Written in the Wi-Fi task, read in the app task: atomic so a read never
+// sees a half-updated value.
+static std::atomic<uint32_t> s_rx_rejected{0};
+static std::atomic<uint32_t> s_rx_queue_full{0};
 
+// Runs in the Wi-Fi task. It must not block or do heavy work (no per-frame
+// logging), so it only filters, copies the frame onto the queue and returns.
 static void on_recv(const esp_now_recv_info_t *info, const uint8_t *data, int len)
 {
-    // Drop anything that is not exactly the expected size. Without this guard a
-    // short packet would make the memcpy below read past the end of the buffer.
-    if (len != (int)sizeof(SpikeMsg)) {
-        ESP_LOGW(TAG, "RX dropped: %d bytes, expected %d", len, (int)sizeof(SpikeMsg));
+    // ESP-NOW delivers frames from any device on the channel, not only the
+    // registered peer. Until encryption is added, the MAC is the only filter.
+    if (memcmp(info->src_addr, s_peer_mac, 6) != 0 || len < 0) {
+        s_rx_rejected++;
         return;
     }
 
-    // Copy into a local instead of casting the pointer: the driver's buffer has
-    // no alignment guarantee, and reading a uint32_t from an unaligned address
-    // is undefined behaviour.
-    SpikeMsg msg;
-    memcpy(&msg, data, sizeof(msg));
+    Frame f;
+    if (!protocol_parse(data, (size_t)len, &f)) {
+        s_rx_rejected++;
+        return;
+    }
 
-    ESP_LOGI(TAG, "RX %02x:%02x:%02x:%02x:%02x:%02x | node %c | counter %lu | uptime %lu ms",
-             info->src_addr[0], info->src_addr[1], info->src_addr[2],
-             info->src_addr[3], info->src_addr[4], info->src_addr[5],
-             msg.src,
-             (unsigned long)msg.counter,
-             (unsigned long)msg.uptime_ms);
+    // Timeout 0: waiting for space here would stall the whole Wi-Fi stack.
+    if (xQueueSend(s_rx_queue, &f, 0) != pdTRUE) {
+        s_rx_queue_full++;
+    }
 }
 
 static void on_sent(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
@@ -104,30 +98,16 @@ static void on_sent(const esp_now_send_info_t *tx_info, esp_now_send_status_t st
     }
 }
 
-static void tx_task(void *arg)
-{
-    (void)arg;
-    uint32_t counter = 0;
-
-    while (true) {
-        SpikeMsg msg;
-        msg.src       = (uint8_t)s_self_id;
-        msg.counter   = counter++;
-        msg.uptime_ms = (uint32_t)(esp_timer_get_time() / 1000);
-
-        esp_err_t err = esp_now_send(s_peer_mac, (const uint8_t *)&msg, sizeof(msg));
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "esp_now_send: %s", esp_err_to_name(err));
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
-
-void espnow_init(const uint8_t peer_mac[6], char self_id)
+void espnow_init(const uint8_t peer_mac[6])
 {
     memcpy(s_peer_mac, peer_mac, 6);
-    s_self_id = self_id;
+
+    // Created before the receive callback is registered: a frame arriving
+    // during start-up would otherwise be pushed to a queue that does not exist.
+    s_rx_queue = xQueueCreate(RX_QUEUE_LEN, sizeof(Frame));
+    if (s_rx_queue == nullptr) {
+        ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
+    }
 
     // Must run after esp_wifi_start(): ESP-NOW rides on an already-running radio.
     ESP_ERROR_CHECK(esp_now_init());
@@ -145,15 +125,29 @@ void espnow_init(const uint8_t peer_mac[6], char self_id)
     // run in STA mode and not softAP.
     peer.ifidx = WIFI_IF_STA;
 
-    // PMK/LMK encryption comes in a later step, together with the real frame.
+    // PMK/LMK encryption comes in a later step.
     peer.encrypt = false;
 
     ESP_ERROR_CHECK(esp_now_add_peer(&peer));
 
-    xTaskCreate(tx_task, "espnow_tx", 3072, nullptr, 5, nullptr);
-
-    ESP_LOGI(TAG, "ESP-NOW ready | self %c | peer %02x:%02x:%02x:%02x:%02x:%02x",
-             s_self_id,
+    ESP_LOGI(TAG, "ESP-NOW ready | peer %02x:%02x:%02x:%02x:%02x:%02x",
              peer_mac[0], peer_mac[1], peer_mac[2],
              peer_mac[3], peer_mac[4], peer_mac[5]);
+}
+
+esp_err_t espnow_send_frame(const Frame &f)
+{
+    return esp_now_send(s_peer_mac, reinterpret_cast<const uint8_t *>(&f), sizeof f);
+}
+
+bool espnow_receive(Frame *out)
+{
+    // nullptr check: called before espnow_init(), there is simply nothing yet.
+    return s_rx_queue != nullptr && xQueueReceive(s_rx_queue, out, 0) == pdTRUE;
+}
+
+void espnow_rx_counters(uint32_t *rejected, uint32_t *queue_full)
+{
+    *rejected   = s_rx_rejected.load();
+    *queue_full = s_rx_queue_full.load();
 }
