@@ -5,7 +5,14 @@
 constexpr uint8_t PROTOCOL_VERSION = 1;
 
 enum class MsgType : uint8_t { Heartbeat = 1, Event = 2 };
-enum class EventId : uint8_t { MotionStarted = 1, MotionStopped = 2 };
+// AccessOpen/AccessClosed are repeated every second by node_b, so a lost
+// frame is corrected by the next one instead of leaving node_a disarmed.
+enum class EventId : uint8_t {
+    MotionStarted = 1,
+    MotionStopped = 2,
+    AccessOpen    = 3,
+    AccessClosed  = 4,
+};
 
 // Packed so both binaries agree on field offsets; padding would silently
 // shift every field after the first. Fields are raw uint8_t rather than the

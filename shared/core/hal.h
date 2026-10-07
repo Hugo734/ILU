@@ -2,19 +2,19 @@
 
 #include <stdint.h>
 
-enum class Led { Off, Red, Yellow, Green };
+enum class Led { Off, Red, Yellow, Green, Blue };
 
-// Nodo B - Acceso
+// Node B - access point
 class IHalB {
 public:
     virtual ~IHalB() = default;
     virtual uint32_t nowMs() const = 0;
-    virtual uint16_t distanceCm() = 0;      // 0 = sin eco
-    virtual bool     buttonPressed() = 0;
+    virtual uint16_t distanceCm() = 0;      // 0 = no echo
+    virtual bool     accessSwitchOn() = 0;  // level, not an event: access lasts while it is on
     virtual void     setLed(Led c) = 0;
 };
 
-// Nodo A - Cuarto
+// Node A - room
 class IHalA {
 public:
     virtual ~IHalA() = default;

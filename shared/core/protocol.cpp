@@ -9,7 +9,9 @@ static bool event_matches_type(uint8_t type, uint8_t event)
         return event == 0;
     case MsgType::Event:
         return event == static_cast<uint8_t>(EventId::MotionStarted) ||
-               event == static_cast<uint8_t>(EventId::MotionStopped);
+               event == static_cast<uint8_t>(EventId::MotionStopped) ||
+               event == static_cast<uint8_t>(EventId::AccessOpen)    ||
+               event == static_cast<uint8_t>(EventId::AccessClosed);
     }
     return false;  // unknown type
 }
