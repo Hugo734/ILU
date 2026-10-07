@@ -4,7 +4,15 @@
 #include "esp_err.h"
 #include "protocol.h"
 
-void net_init(void);
+// node_id 'a' or 'b' selects the MQTT topic ilu/<id>/state. Joins the access
+// point in secrets.h and starts MQTT once an IP is assigned; both keep
+// reconnecting on their own.
+void net_init(char node_id);
+
+// Fire-and-forget, QoS 0. Skipped while the broker is unreachable: the node
+// must keep working with the platform gone (requirement #3).
+void mqtt_publish_state(const char *json);
+
 void espnow_init(const uint8_t peer_mac[6]);
 
 // Returns the esp_now_send() result instead of aborting: one busy-radio

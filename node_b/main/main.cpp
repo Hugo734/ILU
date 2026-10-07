@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <string.h>
+
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -21,6 +24,10 @@ static const uint8_t PEER_MAC[6] = {0x78, 0x42, 0x1c, 0x68, 0x44, 0x98};
 static const uint32_t STATE_REPEAT_MS = 1000;
 
 static const uint32_t BLINK_HALF_MS = 500;
+
+// The platform gets the state every second, and at once when anything in it
+// changes, so the dashboard shows edges without waiting for the next tick.
+static const uint32_t PUBLISH_MS = 1000;
 
 static void send_access_state(bool open, uint16_t *seq, uint32_t now)
 {
@@ -52,7 +59,7 @@ extern "C" void app_main(void)
     hal.setLed(Led::Yellow); vTaskDelay(pdMS_TO_TICKS(1500));
     hal.setLed(Led::Blue);   vTaskDelay(pdMS_TO_TICKS(1500));
 
-    net_init();
+    net_init('b');
     espnow_init(PEER_MAC);
 
     bool     alert       = false;  // motion reported while access was closed
@@ -63,6 +70,8 @@ extern "C" void app_main(void)
     uint16_t seq         = 0;
     bool     have_rx_seq = false;
     uint16_t last_rx_seq = 0;
+    char     last_body[128] = "";
+    uint32_t last_pub    = 0;
 
     while (true) {
         uint32_t now    = hal.nowMs();
@@ -103,14 +112,21 @@ extern "C" void app_main(void)
             last_tx = now;
         }
 
+        // "red_blink" rather than the instantaneous on/off phase: the dashboard
+        // animates the blink itself instead of receiving ten flips a second.
+        const char *led;
         if (access) {
             hal.setLed(Led::Green);
+            led = "green";
         } else if (alert) {
             hal.setLed(((now / BLINK_HALF_MS) % 2) ? Led::Red : Led::Off);
+            led = "red_blink";
         } else if (cerca) {
             hal.setLed(Led::Yellow);
+            led = "yellow";
         } else {
             hal.setLed(Led::Red);
+            led = "red";
         }
 
         // Log on change only, so the radio lines stay visible.
@@ -124,6 +140,22 @@ extern "C" void app_main(void)
         prev_access = access;
         prev_cerca  = cerca;
         first       = false;
+
+        // Distance stays out of the change comparison: it jitters by a
+        // centimetre, which would publish ten times a second. It still goes
+        // out with every periodic message.
+        char body[128];
+        snprintf(body, sizeof body, "\"near\":%s,\"access\":%s,\"alert\":%s,\"led\":\"%s\"",
+                 cerca ? "true" : "false", access ? "true" : "false",
+                 alert ? "true" : "false", led);
+        if (strcmp(body, last_body) != 0 || now - last_pub >= PUBLISH_MS) {
+            char json[192];
+            snprintf(json, sizeof json, "{\"node\":\"b\",\"up\":%lu,\"cm\":%u,%s}",
+                     (unsigned long)now, cm, body);
+            mqtt_publish_state(json);
+            strcpy(last_body, body);
+            last_pub = now;
+        }
 
         vTaskDelay(pdMS_TO_TICKS(100));
     }

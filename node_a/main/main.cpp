@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <string.h>
+
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -21,6 +24,10 @@ static const uint8_t PEER_MAC[6] = {0xf4, 0x65, 0x0b, 0xc0, 0xe0, 0xa4};
 // a broken link all end with the alarm armed, never disarmed.
 static const uint32_t ACCESS_LEASE_MS = 3000;
 
+// The platform gets the state every second, and at once when anything in it
+// changes, so the dashboard shows edges without waiting for the next tick.
+static const uint32_t PUBLISH_MS = 1000;
+
 extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "Nodo a | protocolo v%d", PROTOCOL_VERSION);
@@ -41,7 +48,7 @@ extern "C" void app_main(void)
     ESP_LOGW(TAG, "Buzzer test: 200 ms");
     hal.setBuzzer(true);  vTaskDelay(pdMS_TO_TICKS(200));
     hal.setBuzzer(false);
-    net_init();
+    net_init('a');
     espnow_init(PEER_MAC);
 
     ESP_LOGW(TAG, "PIR warm-up: %lu s. Readings before that are not trustworthy.",
@@ -54,6 +61,8 @@ extern "C" void app_main(void)
     bool     open_heard   = false;
     uint32_t last_open_ms = 0;
     bool     prev_access  = false;
+    char     last_body[160] = "";
+    uint32_t last_pub     = 0;
 
     while (true) {
         uint32_t now    = hal.nowMs();
@@ -82,16 +91,20 @@ extern "C" void app_main(void)
         // triggers and authorised movement never reach it.
         bool alarm = warm && motion && !access;
 
+        const char *led;
         if (access) {
             hal.setBuzzer(false);
             hal.setLed(Led::Blue);
+            led = "blue";
         } else if (alarm) {
             hal.setBuzzer(true);
             hal.setLed(Led::Red);
+            led = "red";
         } else {
             hal.setBuzzer(false);
             // Yellow while warming up, green once the sensor can be trusted.
             hal.setLed(warm ? Led::Green : Led::Yellow);
+            led = warm ? "green" : "yellow";
         }
 
         // Rising edge only: sending every iteration would flood the link with
@@ -122,6 +135,21 @@ extern "C" void app_main(void)
                      motion ? ">>> MOTION" : "clear",
                      (int)hal.alarmActive(), (int)warm, (unsigned long)now);
             prev = motion;
+        }
+
+        // buzzer is read back from the pin, not taken from `alarm`: the platform
+        // must show what the hardware is doing, not what the code intended.
+        char body[160];
+        snprintf(body, sizeof body,
+                 "\"warm\":%s,\"motion\":%s,\"alarm\":%s,\"buzzer\":%d,\"access\":%s,\"led\":\"%s\"",
+                 warm ? "true" : "false", motion ? "true" : "false", alarm ? "true" : "false",
+                 (int)hal.alarmActive(), access ? "true" : "false", led);
+        if (strcmp(body, last_body) != 0 || now - last_pub >= PUBLISH_MS) {
+            char json[224];
+            snprintf(json, sizeof json, "{\"node\":\"a\",\"up\":%lu,%s}", (unsigned long)now, body);
+            mqtt_publish_state(json);
+            strcpy(last_body, body);
+            last_pub = now;
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));
