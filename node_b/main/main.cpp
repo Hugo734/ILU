@@ -40,13 +40,10 @@ extern "C" void app_main(void)
 
         if (acceso) {
             hal.setLed(Led::Green);
-            hal.setServoAngle(90);
         } else if (cerca) {
             hal.setLed(Led::Yellow);
-            hal.setServoAngle(0);
         } else {
             hal.setLed(Led::Red);
-            hal.setServoAngle(0);
         }
 
         ESP_LOGI(TAG, "%3u cm | btn %d | %s", cm, btn,
