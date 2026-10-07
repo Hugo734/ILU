@@ -69,9 +69,9 @@ void HalAEsp32::setLed(Led c)
     //Yellow is red and green together
     bool r = (c == Led::Red)    || (c == Led::Yellow);
     bool g = (c == Led::Green)  || (c == Led::Yellow);
+    bool b = (c == Led::Blue);
 
     gpio_set_level(r_, LED_COMMON_ANODE ? !r : r);
     gpio_set_level(g_, LED_COMMON_ANODE ? !g : g);
-    // Blue is unused, but drive it explicitly so it cannot stay lit.
-    gpio_set_level(b_, LED_COMMON_ANODE ? 1 : 0);    
+    gpio_set_level(b_, LED_COMMON_ANODE ? !b : b);
 }

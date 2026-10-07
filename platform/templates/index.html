@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ILU Live Dashboard</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --panel: #ffffff; --ink: #1c1f24; --muted: #6b7280; --line: #e3e5e8;
+    --ok: #16a34a; --bad: #dc2626; --warn: #d97706; --access: #2563eb; --info: #6b7280;
+    --led-off: #3a3d42;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111316; --panel: #1a1d21; --ink: #e8eaed; --muted: #9aa0a6; --line: #2b2f35;
+      --led-off: #2a2d31;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+           padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { margin: 0; font-size: 18px; letter-spacing: .2px; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+          font-size: 12px; font-weight: 600; border: 1px solid var(--line); }
+  .pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .pill.ok { color: var(--ok); } .pill.bad { color: var(--bad); }
+  main { max-width: 1200px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .panel h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+
+  /* Topology */
+  svg.topo { width: 100%; height: auto; display: block; }
+  .topo text { fill: var(--ink); font-size: 13px; }
+  .topo .small { fill: var(--muted); font-size: 11px; }
+  .topo rect { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+  .topo .wire { stroke: var(--muted); stroke-width: 2; fill: none; }
+  .topo .espnow { stroke: var(--access); stroke-dasharray: 6 5; }
+  .topo .pulse { fill: var(--ok); opacity: 0; }
+
+  .nodes { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+  .card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .card-head h3 { margin: 0; font-size: 17px; }
+  .card-head .role { color: var(--muted); font-size: 12px; }
+  .card-head .right { margin-left: auto; text-align: right; }
+  .age { color: var(--muted); font-size: 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .card.offline .fields, .card.offline .ledwrap { opacity: .35; filter: grayscale(1); }
+
+  .ledwrap { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%;
+             background: var(--bg); border: 1px solid var(--line); flex: none; }
+  .led { width: 30px; height: 30px; border-radius: 50%; background: var(--led-off); transition: background .15s, box-shadow .15s; }
+  .led.red    { background: #ef4444; box-shadow: 0 0 18px 4px #ef444488; }
+  .led.green  { background: #22c55e; box-shadow: 0 0 18px 4px #22c55e88; }
+  .led.yellow { background: #facc15; box-shadow: 0 0 18px 4px #facc1588; }
+  .led.blue   { background: #3b82f6; box-shadow: 0 0 18px 4px #3b82f688; }
+  .led.red_blink { background: #ef4444; box-shadow: 0 0 18px 4px #ef444488; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { background: var(--led-off); box-shadow: none; } }
+
+  .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .field { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .field .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+  .field .v { font-size: 15px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .v.on-alarm { color: var(--bad); } .v.on-access { color: var(--access); } .v.on-ok { color: var(--ok); }
+  .v.on-warn { color: var(--warn); }
+  .field .note { color: var(--muted); font-size: 11px; }
+
+  .dist { margin-top: 12px; }
+  .bar { position: relative; height: 14px; border-radius: 7px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+  .bar .zone { position: absolute; top: 0; bottom: 0; background: #facc1540; border-left: 1px dashed var(--warn); border-right: 1px dashed var(--warn); }
+  .bar .fill { position: absolute; top: 0; bottom: 0; left: 0; background: var(--access); opacity: .7; transition: width .2s; }
+  .scale { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 3px; }
+  canvas.spark { width: 100%; height: 70px; display: block; margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; }
+
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+  pre { margin: 6px 0 0; padding: 10px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line);
+        font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .filters button { font: inherit; font-size: 12px; padding: 4px 12px; border-radius: 999px; cursor: pointer;
+                    border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .filters button.active { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+  ol.timeline { list-style: none; margin: 0; padding: 0; max-height: 420px; overflow-y: auto; }
+  ol.timeline li { display: grid; grid-template-columns: 76px 64px 1fr auto; gap: 10px; align-items: baseline;
+                   padding: 7px 4px; border-bottom: 1px solid var(--line); }
+  ol.timeline li.new { animation: flash 1.2s ease-out; }
+  @keyframes flash { from { background: #3b82f622; } to { background: transparent; } }
+  .t { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .tag { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 4px; text-align: center; background: var(--bg); border: 1px solid var(--line); }
+  .kind-alarm .txt { color: var(--bad); font-weight: 600; } .kind-access .txt { color: var(--access); }
+  .kind-link .txt { color: var(--warn); }
+  .up { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); padding: 10px 4px; }
+
+  @media (max-width: 560px) {
+    main { padding: 16px; }
+    ol.timeline li { grid-template-columns: 64px 1fr; }
+    ol.timeline li .tag, ol.timeline li .up { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>ILU — Dual-node live dashboard</h1>
+    <div class="sub">Every value below is what a node reported over MQTT, never what the platform assumed.</div>
+  </div>
+  <div style="display:flex; gap:10px; align-items:center;">
+    <span id="broker" class="pill bad">Broker: connecting…</span>
+    <span id="clock" class="t"></span>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>System</h2>
+    <svg class="topo" viewBox="0 0 900 210" role="img" aria-label="Topology: node A and node B linked by ESP-NOW, both publishing over MQTT to the broker and platform">
+      <rect x="20"  y="20" width="190" height="66" rx="10"/>
+      <text x="115" y="48" text-anchor="middle" font-weight="700">node_a · room</text>
+      <text x="115" y="68" text-anchor="middle" class="small">PIR · buzzer · RGB</text>
+
+      <rect x="690" y="20" width="190" height="66" rx="10"/>
+      <text x="785" y="48" text-anchor="middle" font-weight="700">node_b · access</text>
+      <text x="785" y="68" text-anchor="middle" class="small">HC-SR04 · switch · RGB</text>
+
+      <path class="wire espnow" d="M210 53 H690"/>
+      <text x="450" y="42" text-anchor="middle" class="small">ESP-NOW · direct, not seen by the platform (requirement #3)</text>
+
+      <rect x="355" y="130" width="190" height="62" rx="10"/>
+      <text x="450" y="157" text-anchor="middle" font-weight="700">Mosquitto + platform</text>
+      <text x="450" y="176" text-anchor="middle" class="small">MQTT · ilu/&lt;node&gt;/state</text>
+
+      <path id="wireA" class="wire" d="M115 86 V161 H355"/>
+      <path id="wireB" class="wire" d="M785 86 V161 H545"/>
+      <circle id="pulseA" class="pulse" r="6"/>
+      <circle id="pulseB" class="pulse" r="6"/>
+    </svg>
+  </section>
+
+  <section class="nodes">
+    <article class="panel card offline" id="card-a">
+      <div class="card-head">
+        <div class="ledwrap"><div class="led" id="led-a"></div></div>
+        <div><h3>node_a</h3><div class="role">Room · motion alarm</div></div>
+        <div class="right"><span class="pill bad" id="online-a">Offline</span><div class="age" id="age-a">no report yet</div></div>
+      </div>
+      <div class="fields">
+        <div class="field"><div class="k">PIR sensor</div><div class="v" id="a-warm">—</div></div>
+        <div class="field"><div class="k">Motion</div><div class="v" id="a-motion">—</div></div>
+        <div class="field"><div class="k">Alarm</div><div class="v" id="a-alarm">—</div></div>
+        <div class="field"><div class="k">Buzzer</div><div class="v" id="a-buzzer">—</div><div class="note">read back from the pin</div></div>
+        <div class="field"><div class="k">Access lease</div><div class="v" id="a-access">—</div><div class="note">heard from node_b</div></div>
+        <div class="field"><div class="k">Uptime</div><div class="v" id="a-up">—</div></div>
+      </div>
+      <details><summary>Last raw report</summary><pre id="raw-a">—</pre></details>
+    </article>
+
+    <article class="panel card offline" id="card-b">
+      <div class="card-head">
+        <div class="ledwrap"><div class="led" id="led-b"></div></div>
+        <div><h3>node_b</h3><div class="role">Access point · switch</div></div>
+        <div class="right"><span class="pill bad" id="online-b">Offline</span><div class="age" id="age-b">no report yet</div></div>
+      </div>
+      <div class="fields">
+        <div class="field"><div class="k">Access switch</div><div class="v" id="b-access">—</div></div>
+        <div class="field"><div class="k">Intrusion alert</div><div class="v" id="b-alert">—</div></div>
+        <div class="field"><div class="k">Someone near</div><div class="v" id="b-near">—</div></div>
+        <div class="field"><div class="k">Distance</div><div class="v" id="b-cm">—</div></div>
+        <div class="field"><div class="k">Uptime</div><div class="v" id="b-up">—</div></div>
+      </div>
+      <div class="dist">
+        <div class="bar"><div class="zone" style="left:4%; width:11%"></div><div class="fill" id="b-bar" style="width:0"></div></div>
+        <div class="scale"><span>0 cm</span><span>near zone 4–15 cm</span><span>100+ cm</span></div>
+        <canvas class="spark" id="spark" aria-label="Distance over the last 60 seconds"></canvas>
+        <div class="scale"><span>−60 s</span><span>distance history</span><span>now</span></div>
+      </div>
+      <details><summary>Last raw report</summary><pre id="raw-b">—</pre></details>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>Event timeline</h2>
+    <div class="filters" id="filters">
+      <button data-kind="all" class="active">All</button>
+      <button data-kind="alarm">Alarm</button>
+      <button data-kind="access">Access</button>
+      <button data-kind="link">Link</button>
+      <button data-kind="info">Info</button>
+    </div>
+    <ol class="timeline" id="timeline"><li class="empty">Waiting for events…</li></ol>
+  </section>
+</main>
+
+<script src="/static/socket.io.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const nodes = { a: null, b: null };
+let events = [];
+let filter = "all";
+let skew = 0;               // server clock minus browser clock, so "ago" is honest
+const distHist = [];        // [browserTimeMs, cm] for the last 60 s
+
+const fmtTime = s => new Date(s * 1000).toLocaleTimeString([], { hour12: false });
+const fmtUp = ms => ms == null ? "—" : (ms / 1000).toFixed(1) + " s";
+function setV(id, text, cls) { const el = $(id); el.textContent = text; el.className = "v" + (cls ? " " + cls : ""); }
+
+function pulse(n) {
+  const path = $("wire" + n.toUpperCase()), dot = $("pulse" + n.toUpperCase());
+  const len = path.getTotalLength(), t0 = performance.now(), dur = 700;
+  (function step(t) {
+    const k = Math.min(1, (t - t0) / dur), p = path.getPointAtLength(len * k);
+    dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y);
+    dot.style.opacity = k < 1 ? 1 : 0;
+    if (k < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+function renderNode(p) {
+  const n = p.node, s = p.state;
+  nodes[n] = p;
+  const card = $("card-" + n), pill = $("online-" + n);
+  card.classList.toggle("offline", !p.online);
+  pill.textContent = p.online ? "Online" : "Offline";
+  pill.className = "pill " + (p.online ? "ok" : "bad");
+  $("led-" + n).className = "led " + (p.online && s ? s.led : "");
+  if (!s) return;
+  $("raw-" + n).textContent = JSON.stringify(s, null, 2);
+  if (n === "a") {
+    setV("a-warm", s.warm ? "Ready" : "Warming up", s.warm ? "on-ok" : "on-warn");
+    setV("a-motion", s.motion ? "DETECTED" : "Clear", s.motion ? "on-warn" : "");
+    setV("a-alarm", s.alarm ? "ON" : "Off", s.alarm ? "on-alarm" : "");
+    setV("a-buzzer", s.buzzer ? "Sounding" : "Silent", s.buzzer ? "on-alarm" : "");
+    setV("a-access", s.access ? "Disarmed" : "Armed", s.access ? "on-access" : "on-ok");
+    setV("a-up", fmtUp(s.up));
+  } else {
+    setV("b-access", s.access ? "OPEN" : "Closed", s.access ? "on-ok" : "");
+    setV("b-alert", s.alert ? "ALERT" : "None", s.alert ? "on-alarm" : "");
+    setV("b-near", s.near ? "Yes" : "No", s.near ? "on-warn" : "");
+    setV("b-cm", s.cm ? s.cm + " cm" : "no echo");
+    setV("b-up", fmtUp(s.up));
+    $("b-bar").style.width = Math.min(100, s.cm || 0) + "%";
+    if (s.cm) distHist.push([Date.now(), s.cm]);
+  }
+}
+
+function renderTimeline() {
+  const list = $("timeline");
+  const shown = events.filter(e => filter === "all" || e.kind === filter);
+  if (!shown.length) { list.innerHTML = '<li class="empty">No events for this filter yet.</li>'; return; }
+  list.innerHTML = "";
+  for (const e of shown.slice(0, 150)) {
+    const li = document.createElement("li");
+    li.className = "kind-" + e.kind + (e._new ? " new" : "");
+    e._new = false;
+    li.innerHTML = `<span class="t">${fmtTime(e.ts_server)}</span>
+      <span class="tag">${e.node ? "node_" + e.node : "platform"}</span>
+      <span class="txt"></span>
+      <span class="up">${e.ts_node != null ? "node t=" + fmtUp(e.ts_node) : ""}</span>`;
+    li.querySelector(".txt").textContent = e.text;
+    list.appendChild(li);
+  }
+}
+
+$("filters").addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  filter = b.dataset.kind;
+  for (const x of $("filters").children) x.classList.toggle("active", x === b);
+  renderTimeline();
+});
+
+function drawSpark() {
+  const c = $("spark"), dpr = window.devicePixelRatio || 1;
+  const w = c.clientWidth, h = c.clientHeight;
+  if (c.width !== w * dpr) { c.width = w * dpr; c.height = h * dpr; }
+  const g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const now = Date.now(), span = 60000, max = 100;
+  while (distHist.length && now - distHist[0][0] > span) distHist.shift();
+  const css = getComputedStyle(document.documentElement);
+  const y = cm => h - 4 - (Math.min(cm, max) / max) * (h - 8);
+  g.fillStyle = "#facc1530"; g.fillRect(0, y(15), w, y(4) - y(15));
+  if (distHist.length < 2) return;
+  g.strokeStyle = css.getPropertyValue("--access"); g.lineWidth = 2; g.beginPath();
+  distHist.forEach(([t, cm], i) => { const x = w - ((now - t) / span) * w; i ? g.lineTo(x, y(cm)) : g.moveTo(x, y(cm)); });
+  g.stroke();
+}
+
+setInterval(() => {
+  const serverNow = Date.now() / 1000 + skew;
+  $("clock").textContent = fmtTime(serverNow);
+  for (const n of ["a", "b"]) {
+    const p = nodes[n];
+    if (p && p.last_seen) $("age-" + n).textContent = "last report " + Math.max(0, serverNow - p.last_seen).toFixed(1) + " s ago · " + p.msgs + " msgs";
+  }
+  drawSpark();
+}, 200);
+
+const socket = io();
+socket.on("snapshot", snap => {
+  skew = snap.server_time - Date.now() / 1000;
+  setBroker(snap.broker);
+  snap.nodes.forEach(renderNode);
+  events = snap.events;
+  renderTimeline();
+});
+socket.on("node", p => { renderNode(p); if (p.online) pulse(p.node); });
+socket.on("event", e => { e._new = true; events.unshift(e); if (events.length > 200) events.pop(); renderTimeline(); });
+socket.on("broker", setBroker);
+socket.on("disconnect", () => { $("broker").textContent = "Dashboard server unreachable"; $("broker").className = "pill bad"; });
+
+function setBroker(b) {
+  $("broker").textContent = b.connected ? "Broker connected" : "Broker disconnected";
+  $("broker").className = "pill " + (b.connected ? "ok" : "bad");
+}
+</script>
+</body>
+</html>
