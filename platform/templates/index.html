@@ -93,6 +93,42 @@
   .kind-link .txt { color: var(--warn); }
   .up { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
   .empty { color: var(--muted); padding: 10px 4px; }
+  .kind-cmd .txt { color: var(--ink); }
+
+  /* Settings in effect, as reported by the node */
+  .settings { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .settings .field { border-style: dashed; }
+  .sub-h { margin: 14px 0 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+  /* Control */
+  form.control { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+  form.control .f { display: grid; gap: 4px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  form.control select, form.control input { font: inherit; font-size: 14px; padding: 6px 8px; border-radius: 8px;
+                                            border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
+  form.control input { width: 110px; }
+  form.control button { font: inherit; font-weight: 600; padding: 7px 16px; border-radius: 8px; cursor: pointer;
+                        border: 1px solid var(--ink); background: var(--ink); color: var(--panel); }
+  form.control button:disabled { opacity: .4; cursor: not-allowed; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg input { display: none; }
+  .seg span { display: block; padding: 6px 12px; cursor: pointer; font-size: 13px; color: var(--ink); text-transform: none; letter-spacing: 0; }
+  .seg input:checked + span { background: var(--ink); color: var(--panel); }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 8px; min-height: 18px; }
+  .hint.err { color: var(--bad); }
+
+  table.cmds { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+  table.cmds th { text-align: left; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase;
+                  letter-spacing: .4px; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  table.cmds td { padding: 7px 4px; border-bottom: 1px solid var(--line); vertical-align: top; font-variant-numeric: tabular-nums; }
+  .chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin: 0 4px 3px 0;
+          border: 1px solid currentColor; white-space: nowrap; }
+  .chip.pending  { color: var(--muted); } .chip.received { color: var(--warn); }
+  .chip.applied  { color: var(--ok); }    .chip.rejected { color: var(--bad); }
+  .chip.timeout  { color: var(--bad); border-style: dashed; }
+  .chip small { font-weight: 400; }
+  .exports { margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .exports a { color: var(--access); margin-right: 10px; }
+  @media (max-width: 560px) { table.cmds .when { display: none; } }
 
   @media (max-width: 560px) {
     main { padding: 16px; }
@@ -130,7 +166,7 @@
 
       <rect x="355" y="130" width="190" height="62" rx="10"/>
       <text x="450" y="157" text-anchor="middle" font-weight="700">Mosquitto + platform</text>
-      <text x="450" y="176" text-anchor="middle" class="small">MQTT · ilu/&lt;node&gt;/state</text>
+      <text x="450" y="176" text-anchor="middle" class="small">MQTT · state · cmd · ack · status</text>
 
       <path id="wireA" class="wire" d="M115 86 V161 H355"/>
       <path id="wireB" class="wire" d="M785 86 V161 H545"/>
@@ -152,7 +188,14 @@
         <div class="field"><div class="k">Alarm</div><div class="v" id="a-alarm">—</div></div>
         <div class="field"><div class="k">Buzzer</div><div class="v" id="a-buzzer">—</div><div class="note">read back from the pin</div></div>
         <div class="field"><div class="k">Access lease</div><div class="v" id="a-access">—</div><div class="note">heard from node_b</div></div>
+        <div class="field"><div class="k">ESP-NOW link</div><div class="v" id="a-peer">—</div><div class="note">frames from node_b</div></div>
         <div class="field"><div class="k">Uptime</div><div class="v" id="a-up">—</div></div>
+      </div>
+      <div class="sub-h">Settings in effect (reported by the node)</div>
+      <div class="settings">
+        <div class="field"><div class="k">buzzer_enabled</div><div class="v" id="a-buzzer_enabled">—</div></div>
+        <div class="field"><div class="k">warmup_s</div><div class="v" id="a-warmup_s">—</div></div>
+        <div class="field"><div class="k">publish_ms</div><div class="v" id="a-publish_ms">—</div></div>
       </div>
       <details><summary>Last raw report</summary><pre id="raw-a">—</pre></details>
     </article>
@@ -168,11 +211,18 @@
         <div class="field"><div class="k">Intrusion alert</div><div class="v" id="b-alert">—</div></div>
         <div class="field"><div class="k">Someone near</div><div class="v" id="b-near">—</div></div>
         <div class="field"><div class="k">Distance</div><div class="v" id="b-cm">—</div></div>
+        <div class="field"><div class="k">ESP-NOW link</div><div class="v" id="b-peer">—</div><div class="note">heartbeat from node_a</div></div>
         <div class="field"><div class="k">Uptime</div><div class="v" id="b-up">—</div></div>
       </div>
+      <div class="sub-h">Settings in effect (reported by the node)</div>
+      <div class="settings">
+        <div class="field"><div class="k">near_cm</div><div class="v" id="b-near_cm">—</div></div>
+        <div class="field"><div class="k">repeat_ms</div><div class="v" id="b-repeat_ms">—</div></div>
+        <div class="field"><div class="k">publish_ms</div><div class="v" id="b-publish_ms">—</div></div>
+      </div>
       <div class="dist">
-        <div class="bar"><div class="zone" style="left:4%; width:11%"></div><div class="fill" id="b-bar" style="width:0"></div></div>
-        <div class="scale"><span>0 cm</span><span>near zone 4–15 cm</span><span>100+ cm</span></div>
+        <div class="bar"><div class="zone" id="b-zone" style="left:4%; width:11%"></div><div class="fill" id="b-bar" style="width:0"></div></div>
+        <div class="scale"><span>0 cm</span><span id="b-zone-label">near zone 4–15 cm</span><span>100+ cm</span></div>
         <canvas class="spark" id="spark" aria-label="Distance over the last 60 seconds"></canvas>
         <div class="scale"><span>−60 s</span><span>distance history</span><span>now</span></div>
       </div>
@@ -181,11 +231,36 @@
   </section>
 
   <section class="panel">
+    <h2>Control</h2>
+    <form class="control" id="control" autocomplete="off">
+      <div class="f">Target
+        <span class="seg" id="target">
+          <label><input type="radio" name="target" value="a" checked><span>node_a</span></label>
+          <label><input type="radio" name="target" value="b"><span>node_b</span></label>
+          <label><input type="radio" name="target" value="all"><span>Both</span></label>
+        </span>
+      </div>
+      <label class="f">Variable <select id="var"></select></label>
+      <label class="f">Value <input id="value" type="number" step="1" required></label>
+      <button type="submit" id="send">Send</button>
+    </form>
+    <div class="hint" id="hint"></div>
+    <table class="cmds">
+      <thead><tr><th class="when">Sent</th><th>Command</th><th>Target</th><th>Node answers</th></tr></thead>
+      <tbody id="cmds"><tr><td colspan="4" class="empty">No commands sent yet.</td></tr></tbody>
+    </table>
+    <div class="exports">History (SQLite) as CSV:
+      <a href="/export/telemetry.csv">telemetry</a><a href="/export/events.csv">events</a><a href="/export/commands.csv">commands</a><a href="/export/acks.csv">acks</a>
+    </div>
+  </section>
+
+  <section class="panel">
     <h2>Event timeline</h2>
     <div class="filters" id="filters">
       <button data-kind="all" class="active">All</button>
       <button data-kind="alarm">Alarm</button>
       <button data-kind="access">Access</button>
+      <button data-kind="cmd">Commands</button>
       <button data-kind="link">Link</button>
       <button data-kind="info">Info</button>
     </div>
@@ -201,6 +276,8 @@ let events = [];
 let filter = "all";
 let skew = 0;               // server clock minus browser clock, so "ago" is honest
 const distHist = [];        // [browserTimeMs, cm] for the last 60 s
+const NEAR_MIN = 4;         // fixed in node_b; the upper edge comes from its report
+let nearMax = 15;
 
 const fmtTime = s => new Date(s * 1000).toLocaleTimeString([], { hour12: false });
 const fmtUp = ms => ms == null ? "—" : (ms / 1000).toFixed(1) + " s";
@@ -224,6 +301,7 @@ function renderNode(p) {
   card.classList.toggle("offline", !p.online);
   pill.textContent = p.online ? "Online" : "Offline";
   pill.className = "pill " + (p.online ? "ok" : "bad");
+  pill.title = "Online = a report in the last 3 s. Broker status (Last Will): " + (p.lwt || "unknown");
   $("led-" + n).className = "led " + (p.online && s ? s.led : "");
   if (!s) return;
   $("raw-" + n).textContent = JSON.stringify(s, null, 2);
@@ -233,17 +311,135 @@ function renderNode(p) {
     setV("a-alarm", s.alarm ? "ON" : "Off", s.alarm ? "on-alarm" : "");
     setV("a-buzzer", s.buzzer ? "Sounding" : "Silent", s.buzzer ? "on-alarm" : "");
     setV("a-access", s.access ? "Disarmed" : "Armed", s.access ? "on-access" : "on-ok");
+    setPeer("a-peer", s.peer);
     setV("a-up", fmtUp(s.up));
+    setV("a-buzzer_enabled", s.buzzer_enabled == null ? "—" : s.buzzer_enabled ? "1 · sounds" : "0 · silent alarm");
+    setV("a-warmup_s", s.warmup_s == null ? "—" : s.warmup_s + " s");
+    setV("a-publish_ms", s.publish_ms == null ? "—" : s.publish_ms + " ms");
   } else {
     setV("b-access", s.access ? "OPEN" : "Closed", s.access ? "on-ok" : "");
     setV("b-alert", s.alert ? "ALERT" : "None", s.alert ? "on-alarm" : "");
     setV("b-near", s.near ? "Yes" : "No", s.near ? "on-warn" : "");
     setV("b-cm", s.cm ? s.cm + " cm" : "no echo");
+    setPeer("b-peer", s.peer);
     setV("b-up", fmtUp(s.up));
+    setV("b-near_cm", s.near_cm == null ? "—" : s.near_cm + " cm");
+    setV("b-repeat_ms", s.repeat_ms == null ? "—" : s.repeat_ms + " ms");
+    setV("b-publish_ms", s.publish_ms == null ? "—" : s.publish_ms + " ms");
+    if (s.near_cm != null) {
+      nearMax = s.near_cm;
+      $("b-zone").style.width = Math.max(0, Math.min(100, nearMax) - NEAR_MIN) + "%";
+      $("b-zone-label").textContent = `near zone ${NEAR_MIN}–${nearMax} cm`;
+    }
     $("b-bar").style.width = Math.min(100, s.cm || 0) + "%";
     if (s.cm) distHist.push([Date.now(), s.cm]);
   }
 }
+
+function setPeer(id, peer) {
+  if (peer == null) { setV(id, "—"); return; }
+  setV(id, peer ? "Up" : "LOST", peer ? "on-ok" : "on-alarm");
+}
+
+// --- Commands ---------------------------------------------------------------
+// Ranges here only fill the hints. They are deliberately not enforced: the
+// node decides, so an out-of-range value shows a real rejection from it.
+const VARS = {
+  a: [["buzzer_enabled", 0, 1, "0 = silent alarm (LED and node_b alert only)"],
+      ["warmup_s", 0, 300, "PIR warm-up in seconds"],
+      ["publish_ms", 250, 2000, "state report period"]],
+  b: [["near_cm", 5, 100, "upper edge of the near window"],
+      ["repeat_ms", 200, 1000, "access-state repeat to node_a"],
+      ["publish_ms", 250, 2000, "state report period"]],
+};
+const commands = new Map();   // id -> command view, newest last
+let cmdTimeout = 3;
+
+function varsFor(target) {
+  if (target !== "all") return VARS[target].map(v => [...v, null]);
+  // Both: the shared variable first; the others are offered too, and the
+  // node that lacks one answers with its own rejection.
+  const seen = new Map();
+  for (const n of ["a", "b"]) for (const v of VARS[n]) {
+    if (seen.has(v[0])) seen.get(v[0])[4] = null;
+    else seen.set(v[0], [...v, "node_" + n + " only"]);
+  }
+  return [...seen.values()].sort((x, y) => (x[4] === null ? -1 : 0) - (y[4] === null ? -1 : 0));
+}
+
+function currentTarget() { return document.querySelector('input[name="target"]:checked').value; }
+
+function fillVars() {
+  const sel = $("var"), keep = sel.value;
+  sel.innerHTML = "";
+  for (const [name, , , , only] of varsFor(currentTarget())) {
+    const o = document.createElement("option");
+    o.value = name; o.textContent = name + (only ? ` (${only})` : "");
+    sel.appendChild(o);
+  }
+  if ([...sel.options].some(o => o.value === keep)) sel.value = keep;
+  showHint();
+}
+
+function showHint(text, err) {
+  const h = $("hint");
+  if (text) { h.textContent = text; h.className = "hint" + (err ? " err" : ""); return; }
+  const v = varsFor(currentTarget()).find(v => v[0] === $("var").value);
+  h.className = "hint";
+  h.textContent = v ? `${v[0]}: ${v[3]}. The node accepts ${v[1]}–${v[2]}; anything else is sent anyway and the node rejects it.` : "";
+}
+
+function chip(n, slot) {
+  const label = { pending: "pending", received: "received", applied: "applied",
+                  rejected: "rejected", timeout: "timed out" }[slot.stage] || slot.stage;
+  let extra = "";
+  if (slot.stage === "applied") extra = ` = ${slot.value}`;
+  if (slot.stage === "rejected") extra = `: ${slot.reason}` + (slot.value != null ? ` · still ${slot.value}` : "");
+  if (slot.late) extra += " · late";
+  const t = slot.t_final != null ? ` <small>${Math.round(slot.t_final * 1000)} ms</small>` : "";
+  const el = document.createElement("span");
+  el.className = "chip " + slot.stage;
+  el.innerHTML = `node_${n} · ${label}<span class="x"></span>${t}`;
+  el.querySelector(".x").textContent = extra;
+  return el;
+}
+
+function renderCommands() {
+  const body = $("cmds");
+  const list = [...commands.values()].reverse().slice(0, 15);
+  if (!list.length) { body.innerHTML = '<tr><td colspan="4" class="empty">No commands sent yet.</td></tr>'; return; }
+  body.innerHTML = "";
+  for (const c of list) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="when t">${fmtTime(c.ts)}</td><td><code class="cv"></code><div class="up">${c.id}</div></td>
+                    <td>${c.target === "all" ? "both · ilu/all/cmd" : "node_" + c.target}</td><td class="ans"></td>`;
+    tr.querySelector(".cv").textContent = `${c.var} = ${c.value}`;
+    for (const n of Object.keys(c.nodes)) tr.querySelector(".ans").appendChild(chip(n, c.nodes[n]));
+    body.appendChild(tr);
+  }
+}
+
+function upsertCommand(c) {
+  commands.delete(c.id);
+  commands.set(c.id, c);
+  while (commands.size > 50) commands.delete(commands.keys().next().value);
+  renderCommands();
+}
+
+document.querySelectorAll('input[name="target"]').forEach(r => r.addEventListener("change", fillVars));
+$("var").addEventListener("change", () => showHint());
+$("control").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const value = $("value").value.trim();
+  if (value === "" || !/^-?\d+$/.test(value)) { showHint("Value must be a whole number.", true); return; }
+  $("send").disabled = true;
+  socket.emit("command", { target: currentTarget(), var: $("var").value, value: Number(value) }, res => {
+    $("send").disabled = false;
+    if (res && res.ok) showHint(`Sent as ${res.id}. Waiting for the node's answer (timeout ${cmdTimeout} s)…`);
+    else showHint("Not sent: " + (res ? res.error : "no answer from the dashboard server"), true);
+  });
+});
+fillVars();
 
 function renderTimeline() {
   const list = $("timeline");
@@ -279,7 +475,7 @@ function drawSpark() {
   while (distHist.length && now - distHist[0][0] > span) distHist.shift();
   const css = getComputedStyle(document.documentElement);
   const y = cm => h - 4 - (Math.min(cm, max) / max) * (h - 8);
-  g.fillStyle = "#facc1530"; g.fillRect(0, y(15), w, y(4) - y(15));
+  g.fillStyle = "#facc1530"; g.fillRect(0, y(nearMax), w, y(NEAR_MIN) - y(nearMax));
   if (distHist.length < 2) return;
   g.strokeStyle = css.getPropertyValue("--access"); g.lineWidth = 2; g.beginPath();
   distHist.forEach(([t, cm], i) => { const x = w - ((now - t) / span) * w; i ? g.lineTo(x, y(cm)) : g.moveTo(x, y(cm)); });
@@ -303,8 +499,13 @@ socket.on("snapshot", snap => {
   snap.nodes.forEach(renderNode);
   events = snap.events;
   renderTimeline();
+  cmdTimeout = snap.cmd_timeout || cmdTimeout;
+  commands.clear();
+  (snap.commands || []).forEach(c => commands.set(c.id, c));
+  renderCommands();
 });
 socket.on("node", p => { renderNode(p); if (p.online) pulse(p.node); });
+socket.on("command", upsertCommand);
 socket.on("event", e => { e._new = true; events.unshift(e); if (events.length > 200) events.pop(); renderTimeline(); });
 socket.on("broker", setBroker);
 socket.on("disconnect", () => { $("broker").textContent = "Dashboard server unreachable"; $("broker").className = "pill bad"; });

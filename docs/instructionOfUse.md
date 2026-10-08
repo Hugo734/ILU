@@ -110,9 +110,14 @@ mosquitto_sub -h 192.168.1.110 -t 'ilu/#' -v
 Debe salir ~1 mensaje por segundo de cada nodo:
 
 ```
-ilu/a/state {"node":"a","up":...,"warm":true,"motion":false,...}
-ilu/b/state {"node":"b","up":...,"cm":40,"near":false,...}
+ilu/a/state {"node":"a","up":...,"warm":true,"motion":false,...,"peer":true,...,"buzzer_enabled":1,"warmup_s":60,"publish_ms":1000}
+ilu/b/state {"node":"b","up":...,"cm":40,"near":false,...,"peer":true,...,"near_cm":15,"repeat_ms":1000,"publish_ms":1000}
+ilu/a/status online
+ilu/b/status online
 ```
+
+`ilu/<nodo>/status` es retenido: `online` lo publica el nodo al conectarse, `offline` lo publica
+el broker (Last Will) unos 7,5 s después de que el nodo deja de responder.
 
 Si no sale nada: IP (sección 1), broker (sección 2), o mira el monitor serie (sección 6).
 
@@ -148,6 +153,48 @@ laptop, así que no depende de la IP). Si algún día el broker estuviera en otr
 
 ```bash
 ILU_BROKER=<IP-DEL-BROKER> env -u PYTHONPATH platform/.venv/bin/python platform/app.py
+```
+
+### Enviar comandos
+
+En el panel **Control** del dashboard: elegir destino (node_a, node_b o Both), variable y valor,
+y **Send**. La tabla debajo muestra la respuesta de cada nodo:
+
+| Estado | Significa |
+|---|---|
+| `pending` | enviado, el nodo aún no contesta |
+| `received` | el nodo confirmó la recepción (lo leyó y lo entendió) |
+| `applied = X` | el nodo lo ejecutó; X es el valor que está usando ahora |
+| `rejected: motivo · still X` | el nodo lo rechazó; sigue usando X |
+| `timed out` | sin respuesta final en 3 s (nodo apagado, o se perdió) |
+
+| Variable | Nodo | Rango | Efecto |
+|---|---|---|---|
+| `buzzer_enabled` | A | 0–1 | 0 = alarma silenciosa (LED rojo y alerta a node_b, sin sonido) |
+| `warmup_s` | A | 0–300 | calentamiento del PIR en segundos |
+| `near_cm` | B | 5–100 | límite superior de la zona "cerca" (amarillo) |
+| `repeat_ms` | B | 200–1000 | cada cuánto node_b repite el estado del acceso a node_a |
+| `publish_ms` | A y B | 250–2000 | cada cuánto el nodo publica su estado |
+
+Para demostrar un rechazo: mandar `near_cm = 500` a node_b, o `near_cm` a **Both** (node_a no
+tiene esa variable y contesta `unknown variable`). Los valores vuelven a los de fábrica si el
+nodo se reinicia; el dashboard lo muestra porque siempre enseña lo que el nodo reporta.
+
+También se puede mandar un comando a mano, sin dashboard:
+
+```bash
+mosquitto_pub -h 192.168.1.110 -t ilu/b/cmd -m '{"id":"manual-1","var":"near_cm","value":25}'
+mosquitto_pub -h 192.168.1.110 -t ilu/all/cmd -m '{"id":"manual-2","var":"publish_ms","value":500}'
+mosquitto_sub -h 192.168.1.110 -t 'ilu/+/ack' -v      # ver las respuestas
+```
+
+### Historial
+
+Todo lo que llega se guarda en `platform/history.db` (SQLite): reportes, eventos, comandos y
+respuestas. Desde el dashboard hay enlaces para bajarlo como CSV, o directo:
+
+```bash
+sqlite3 platform/history.db "SELECT * FROM acks ORDER BY id DESC LIMIT 10;"
 ```
 
 ### Recrear el entorno de Python (si `platform/.venv` no existe o se rompió)
@@ -264,12 +311,31 @@ Qué buscar en los logs:
 
 ## 7. Tests del núcleo compartido (sin placas)
 
-Compila `shared/core` en el PC (sin ESP-IDF) y corre los 15 tests del protocolo:
+Compila `shared/core` en el PC (sin ESP-IDF) y corre los tests del protocolo ESP-NOW y del
+parser de comandos:
 
 ```bash
 cmake -S . -B build-host && cmake --build build-host
 ctest --test-dir build-host --output-on-failure
 ```
+
+## 7b. Test de la plataforma (sin placas)
+
+Levanta su propio broker (amqtt, en Python), arranca `app.py` contra él y dos nodos simulados
+(`test/sim_nodes.py`), y prueba comandos, rechazos, timeouts, offline, Last Will e historial:
+
+```bash
+platform/.venv/bin/pip install "python-socketio[client]" amqtt   # solo la primera vez
+env -u PYTHONPATH platform/.venv/bin/python test/test_platform.py
+```
+
+Los nodos simulados también sirven para enseñar el dashboard sin placas:
+
+```bash
+env -u PYTHONPATH platform/.venv/bin/python test/sim_nodes.py localhost
+```
+
+Ojo: si las placas están encendidas a la vez, los simulados publican en los mismos tópicos.
 
 ---
 
@@ -283,6 +349,17 @@ systemctl is-active mosquitto                    # → active
 ss -ltn | grep 1883                              # → 0.0.0.0:1883
 mosquitto_sub -h 192.168.1.110 -t 'ilu/#' -v     # ¿mensajes de a y b? (Ctrl+C)
 env -u PYTHONPATH platform/.venv/bin/python platform/app.py   # → http://localhost:5000
+```
+
+### Si la versión nueva falla: volver a la que ya funcionaba
+
+La rama `v2.0` tiene los comandos; `main` es la versión verificada sin comandos.
+
+```bash
+git switch main
+idf.py -C node_a -p $PORT_A flash
+idf.py -C node_b -p $PORT_B flash
+# y reiniciar app.py: el de main no conoce los comandos
 ```
 
 Terminales recomendadas durante la demo:

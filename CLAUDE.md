@@ -1,7 +1,12 @@
 # CLAUDE.md — ILU IoT dual-node challenge
 
-Read this first. Last updated: Tuesday 6 October 2026, ~23:40, end of session.
-Everything below is committed (last commit `6f5ce37 Dashboard finished`).
+Read this first. Last updated: Thursday 8 October 2026 (demo day), branch `v2.0`.
+
+**Branches.** `main` = the version verified on hardware on 8 October (no commands). `v2.0` = D3 +
+D4 below: commands, acks, controllable variables, A→B heartbeat, MQTT Last Will, SQLite history.
+v2.0 was written on a Windows machine without the boards: it compiles and passes the host and
+platform tests, but **has not run on hardware**. If it fails at the demo, `git switch main` and
+reflash. The README's "Verification" section is the honest status.
 
 Two ESP32 nodes (C++ on ESP-IDF v5.5.5, no Arduino) talk directly over ESP-NOW, and both publish
 their state over Wi-Fi/MQTT to a Mosquitto broker on the laptop. A Flask + Socket.IO dashboard
@@ -108,13 +113,16 @@ but tight. If it runs out, switch to the "Single factory app (large)" partition 
 | Path | Role |
 |---|---|
 | `shared/core/protocol.{h,cpp}` | 10-byte packed `Frame` (version, type, src, event, seq, uptime_ms); `MsgType`; `EventId` = MotionStarted 1, MotionStopped 2, AccessOpen 3, AccessClosed 4; `protocol_parse()` (stateless, `memcpy` for unaligned buffers) |
+| `shared/core/command.{h,cpp}` | `command_parse()` (flat JSON `{"id","var","value"}`, no escapes, int32 only, unknown/duplicate fields rejected), `command_apply()` (name + range check against a `VarSpec` table), `ack_format()` |
 | `shared/core/hal.h` | `IHalA` / `IHalB`; `Led { Off, Red, Yellow, Green, Blue }`; `accessSwitchOn()` (level) |
-| `shared/net/net.{h,cpp}` | `net_init(node_id)`: Wi-Fi STA join + auto-retry, starts esp-mqtt on GOT_IP; `mqtt_publish_state(json)` (QoS 0, skipped while disconnected); `espnow_init(peer)`, `espnow_send_frame()`, `espnow_receive()` (queue), `espnow_rx_counters()` |
+| `shared/net/net.{h,cpp}` | `net_init(node_id)`: Wi-Fi STA join + auto-retry, starts esp-mqtt on GOT_IP, keepalive 5 s, Last Will `offline` (retained) on `ilu/<id>/status`, `online` on connect; subscribes `ilu/<id>/cmd` + `ilu/all/cmd` on every connect; MQTT task parses commands, sends the `received` ack, queues them (4 slots); `command_receive()`, `mqtt_publish_ack()` (QoS 1), `mqtt_publish_state(json)` (QoS 0); `espnow_init(peer)`, `espnow_send_frame()`, `espnow_receive()` (queue), `espnow_rx_counters()` |
 | `shared/net/secrets.h` | git-ignored credentials + `MQTT_BROKER_URI` |
-| `test/test_protocol.cpp` | 15 host tests, one rule broken per case |
-| `node_a/main/` | PIR + buzzer + LED, access lease, sends `MotionStarted`, publishes `ilu/a/state` |
-| `node_b/main/` | HC-SR04 + switch + LED, sends access state, receives alerts, publishes `ilu/b/state` |
-| `platform/app.py` | MQTT subscriber → state store → Socket.IO push; timeline + offline watchdog |
+| `test/test_protocol.cpp` | host tests for the ESP-NOW frame, one rule broken per case |
+| `test/test_command.cpp` | host tests for the command parser, range check and ack format |
+| `test/test_platform.py` | end to end: own amqtt broker + real `app.py` + `sim_nodes.py`, driven over Socket.IO (40 checks) |
+| `node_a/main/` | PIR + buzzer + LED, access lease, heartbeat to node_b every 1 s, peer tracking, vars `buzzer_enabled` / `warmup_s` / `publish_ms`, publishes `ilu/a/state` |
+| `node_b/main/` | HC-SR04 + switch + LED, sends access state every `repeat_ms`, receives alerts + heartbeats, blue when node_a silent 3 s, vars `near_cm` / `repeat_ms` / `publish_ms`, publishes `ilu/b/state` |
+| `platform/app.py` | MQTT (state, ack, status) → state store → Socket.IO push; commands with per-node tracking (pending/received/applied/rejected/timeout 3 s); timeline + offline watchdog; SQLite `history.db` + `/export/<table>.csv`. Env: `ILU_BROKER`, `ILU_BROKER_PORT`, `ILU_PORT`, `ILU_DB` |
 | `platform/templates/index.html` | The dashboard page |
 | `platform/static/socket.io.min.js` | Vendored Socket.IO 4.7.5 client (works without internet) |
 | `platform/mosquitto/ilu.conf` | Broker config |
@@ -144,9 +152,10 @@ message is idempotent, so no duplicate dropping; `seq` gaps are only logged.
 ### MQTT state messages (each node: every 1 s, and at once when anything but uptime/distance changes)
 
 ```
-ilu/a/state {"node":"a","up":26480,"warm":true,"motion":false,"alarm":false,"buzzer":0,"access":false,"led":"green"}
-ilu/b/state {"node":"b","up":26700,"cm":40,"near":false,"access":false,"alert":false,"led":"red"}
+ilu/a/state {"node":"a","up":26480,"warm":true,"motion":false,"alarm":false,"buzzer":0,"access":false,"peer":true,"led":"green","buzzer_enabled":1,"warmup_s":60,"publish_ms":1000}
+ilu/b/state {"node":"b","up":26700,"cm":40,"near":false,"access":false,"alert":false,"peer":true,"led":"red","near_cm":15,"repeat_ms":1000,"publish_ms":1000}
 ```
+(v2.0 adds `peer` and the settings; `main` has the shorter form.)
 
 `buzzer` is read back from the pin (`alarmActive()`), not taken from `alarm`. `led` values:
 `off|red|yellow|green|blue|red_blink`. node_b's `cm` is excluded from change detection (it jitters).
@@ -203,27 +212,32 @@ silence (checked every 0.5 s); `up` going backwards = "Node rebooted".
 
 ## Next steps, in order
 
-1. The checks above (browser first — it is quick).
-2. **D3 — commands + acknowledgements** (requirements #4, #5, #6). Needs the user's choice of
-   ≥2 remotely controllable variables per node. Proposed, not yet confirmed:
-   node_a: buzzer enabled on/off, PIR warm-up time; node_b: near threshold (`CERCA_MAX`),
-   access-state repeat interval. Design sketch: topics `ilu/a/cmd`, `ilu/b/cmd`, `ilu/all/cmd`;
-   each command carries a `cmd_id`; node replies on `ilu/<node>/ack` with result
-   (APPLIED / REJECTED + reason) and the value **actually in effect**; dashboard shows
-   pending → confirmed / rejected / timed out (2 s). Incoming commands go through a queue to the
-   main loop, same pattern as ESP-NOW. Watch the 14% flash margin.
-3. **D4 — link loss + history.** MQTT Last Will on `ilu/<node>/status` (requirement #7), SQLite
-   logger (`platform/history.db`, schema in README: telemetry, events, commands, acks,
-   link_status) with node and server timestamps. A→B ESP-NOW heartbeat is still missing for #7
-   (B→A already has the 1 s access-state repeat). README reserves blue for `DEGRADED`, but blue now
-   means "access open" on node_a — resolve that conflict.
-4. **Docs.** ⚠️ `docs/requirements.md` still describes the **scrapped** firmware (PlatformIO,
-   DHT22, HMAC, `firmware/` paths, MQTT for #3). Rewrite it against the real code. Also review
-   `docs/decisions.md`, `protocol.md`, `architecture.md`, `demo-script.md` and README. Decisions to
-   record: frame format, queue pattern, access lease, switch instead of button, blue = access on
-   node_a, MQTT state-on-change + 1 s, dashboard derives events from state diffs, anonymous broker.
-   Requirement #3 lives in `node_a/main/main.cpp` (send on edge) and `node_b/main/main.cpp`
-   (receive + alert + access state).
+1. **Flash v2.0 and check on hardware** (needs the boards):
+   - Both boot, join Wi-Fi, MQTT connects; `mosquitto_sub -t 'ilu/#' -v` shows `ilu/a/status online`.
+   - Dashboard → Control: `near_cm = 25` to node_b → chip "applied = 25", card shows 25 cm, the
+     yellow zone on the bar moves, and a hand at 20 cm turns node_b yellow.
+   - `near_cm = 500` → "rejected: out of range · still 25".
+   - Both → `publish_ms = 500` → two "applied" chips, reports twice as often.
+   - Both → `near_cm = 30` → node_a "rejected: unknown variable", node_b "applied".
+   - `buzzer_enabled = 0` to node_a, wave → LED red and node_b blinks, but no sound.
+   - Unplug node_a → node_b LED blue within ~3 s; dashboard: node_a offline (3 s), Last Will
+     after ~7.5 s.
+   - The old checks still pass: A→B alert, switch → node_a blue, unplug node_b → node_a armed.
+2. If something fails there, `git switch main` for the demo and debug afterwards.
+3. Afterwards: merge `v2.0` into `develop` → `main` once verified on hardware.
+
+Design decisions taken in v2.0 (all in the README): the node is the authority on ranges (the
+platform forwards everything); two acks, `received` from the MQTT task and `applied`/`rejected`
+from the main loop; settings in RAM, defaults on reboot; blue on node_b = node_a lost (blue on
+node_a still = access open — each LED is read per node); the `fsm_*` placeholders were deleted
+because the logic lives in each `main.cpp`. The old `docs/*.md` design documents were deleted
+by the user on 8 October; only `docs/instructionOfUse.md` remains.
+
+### Development on Windows (how v2.0 was built and tested)
+ESP-IDF rejects paths with spaces, and the user folder is `C:\Users\Hugo Castillo`. ESP-IDF
+v5.5.5 lives in `C:\esp\v5.5.5`, tools in `C:\esp\tools` (`IDF_TOOLS_PATH`), host GCC in
+`C:\esp\mingw64`, Node.js (for a jsdom check of the dashboard) in `C:\esp\node`. The repo is
+mapped to `R:` with `subst R: "C:\Users\Hugo Castillo\Documents\ILU"` (lost on reboot).
 
 ### Small known issues
 - When the peer is off, `net: TX got no link-layer ACK` is logged once per second.

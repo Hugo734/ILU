@@ -6,14 +6,11 @@
 #include "freertos/task.h"
 
 #include "hal_a_esp32.h"
+#include "command.h"
 #include "protocol.h"
 #include "net.h"
 
 static const char *TAG = "node_a";
-
-// The HC-SR501 fires on its own while its pyroelectric element settles.
-// Drop this to 10000 while working at the bench, raise it before the demo.
-static const uint32_t WARMUP_MS = 60000;
 
 // node_b, read from its eFuse with esptool read_mac. Lives here and not in a
 // shared header because each node's peer is the other one.
@@ -24,9 +21,60 @@ static const uint8_t PEER_MAC[6] = {0xf4, 0x65, 0x0b, 0xc0, 0xe0, 0xa4};
 // a broken link all end with the alarm armed, never disarmed.
 static const uint32_t ACCESS_LEASE_MS = 3000;
 
-// The platform gets the state every second, and at once when anything in it
-// changes, so the dashboard shows edges without waiting for the next tick.
-static const uint32_t PUBLISH_MS = 1000;
+// node_b has no other way to know this node is alive: a motion alert only
+// goes out when something happens. node_b treats 3 s of silence as a lost link.
+static const uint32_t HEARTBEAT_MS = 1000;
+
+// Any valid frame from node_b counts as a sign of life; it sends at least
+// one per second.
+static const uint32_t PEER_TIMEOUT_MS = 3000;
+
+// Remotely controllable variables. The platform addresses them by name; the
+// index is the enum value. Values reset to the defaults on reboot, and the
+// state report always carries the values actually in effect.
+enum Var { BUZZER_ENABLED, WARMUP_S, PUBLISH_MS, VAR_COUNT };
+static const VarSpec VARS[VAR_COUNT] = {
+    // 0 = silent alarm: the LED still turns red and node_b is still alerted.
+    {"buzzer_enabled", 0, 1},
+    // The HC-SR501 fires on its own while its pyroelectric element settles.
+    {"warmup_s", 0, 300},
+    // The platform marks a node offline after 3 s without a report.
+    {"publish_ms", 250, 2000},
+};
+static int32_t cfg[VAR_COUNT] = {1, 60, 1000};
+
+static Frame make_frame(MsgType type, EventId event, uint16_t *seq, uint32_t now)
+{
+    Frame f{};
+    f.version   = PROTOCOL_VERSION;
+    f.type      = static_cast<uint8_t>(type);
+    f.src       = 'A';
+    f.event     = static_cast<uint8_t>(event);
+    f.seq       = (*seq)++;
+    f.uptime_ms = now;
+    return f;
+}
+
+// Applies every queued command and acknowledges its execution. Runs at the
+// top of the loop, so a new value already drives this iteration's outputs
+// and the state report that follows.
+static void handle_commands()
+{
+    Command c;
+    while (command_receive(&c)) {
+        ApplyResult r = command_apply(VARS, cfg, VAR_COUNT, c);
+        bool known = r.index >= 0;
+        char ack[160];
+        if (ack_format(ack, sizeof ack, 'a', c.id, c.var, r.stage, r.reason, known, known ? cfg[r.index] : 0)) {
+            mqtt_publish_ack(ack);
+        }
+        if (r.stage == AckStage::Applied) {
+            ESP_LOGW(TAG, "cmd %s: %s = %ld applied", c.id, c.var, (long)cfg[r.index]);
+        } else {
+            ESP_LOGW(TAG, "cmd %s: %s = %ld rejected (%s)", c.id, c.var, (long)c.value, r.reason);
+        }
+    }
+}
 
 extern "C" void app_main(void)
 {
@@ -51,8 +99,7 @@ extern "C" void app_main(void)
     net_init('a');
     espnow_init(PEER_MAC);
 
-    ESP_LOGW(TAG, "PIR warm-up: %lu s. Readings before that are not trustworthy.",
-             (unsigned long)(WARMUP_MS / 1000));
+    ESP_LOGW(TAG, "PIR warm-up: %ld s. Readings before that are not trustworthy.", (long)cfg[WARMUP_S]);
 
     uint32_t t0   = hal.nowMs();
     bool     prev = false;
@@ -61,16 +108,24 @@ extern "C" void app_main(void)
     bool     open_heard   = false;
     uint32_t last_open_ms = 0;
     bool     prev_access  = false;
-    char     last_body[160] = "";
+    bool     peer_heard   = false;
+    uint32_t last_peer_ms = 0;
+    bool     prev_peer    = false;
+    uint32_t last_hb      = 0;
+    char     last_body[256] = "";
     uint32_t last_pub     = 0;
 
     while (true) {
+        handle_commands();
+
         uint32_t now    = hal.nowMs();
-        bool     warm   = (now - t0) >= WARMUP_MS;
+        bool     warm   = (now - t0) >= (uint32_t)cfg[WARMUP_S] * 1000;
         bool     motion = hal.motionDetected();
 
         Frame f;
         while (espnow_receive(&f)) {
+            peer_heard   = true;
+            last_peer_ms = now;
             if (f.type != static_cast<uint8_t>(MsgType::Event)) continue;
             if (f.event == static_cast<uint8_t>(EventId::AccessOpen)) {
                 open_heard   = true;
@@ -80,11 +135,16 @@ extern "C" void app_main(void)
             }
         }
         bool access = open_heard && (now - last_open_ms) < ACCESS_LEASE_MS;
+        bool peer   = peer_heard && (now - last_peer_ms) < PEER_TIMEOUT_MS;
 
         if (access != prev_access) {
             ESP_LOGW(TAG, "access %s%s", access ? "OPEN: alarm disarmed" : "CLOSED: alarm armed",
                      (!access && open_heard) ? " (lease expired, node_b silent)" : "");
             prev_access = access;
+        }
+        if (peer != prev_peer) {
+            ESP_LOGW(TAG, "ESP-NOW link to node_b %s", peer ? "up" : "LOST: staying armed");
+            prev_peer = peer;
         }
 
         // node_b gets the same signal node_a acts on, so warm-up false
@@ -97,7 +157,7 @@ extern "C" void app_main(void)
             hal.setLed(Led::Blue);
             led = "blue";
         } else if (alarm) {
-            hal.setBuzzer(true);
+            hal.setBuzzer(cfg[BUZZER_ENABLED] != 0);
             hal.setLed(Led::Red);
             led = "red";
         } else {
@@ -110,22 +170,24 @@ extern "C" void app_main(void)
         // Rising edge only: sending every iteration would flood the link with
         // ten frames a second for as long as someone stays in front of the PIR.
         if (alarm && !prev_alarm) {
-            Frame f{};
-            f.version   = PROTOCOL_VERSION;
-            f.type      = static_cast<uint8_t>(MsgType::Event);
-            f.src       = 'A';
-            f.event     = static_cast<uint8_t>(EventId::MotionStarted);
-            f.seq       = seq++;
-            f.uptime_ms = now;
-
-            esp_err_t err = espnow_send_frame(f);
+            Frame m = make_frame(MsgType::Event, EventId::MotionStarted, &seq, now);
+            esp_err_t err = espnow_send_frame(m);
             if (err == ESP_OK) {
-                ESP_LOGI(TAG, "TX MotionStarted seq %u: ESP_OK", (unsigned)f.seq);
+                ESP_LOGI(TAG, "TX MotionStarted seq %u: ESP_OK", (unsigned)m.seq);
             } else {
-                ESP_LOGE(TAG, "TX MotionStarted seq %u: %s", (unsigned)f.seq, esp_err_to_name(err));
+                ESP_LOGE(TAG, "TX MotionStarted seq %u: %s", (unsigned)m.seq, esp_err_to_name(err));
             }
         }
         prev_alarm = alarm;
+
+        // Shares the sequence counter with the events, so a gap node_b sees
+        // means lost frames, whatever their type.
+        if (now - last_hb >= HEARTBEAT_MS) {
+            Frame hb = make_frame(MsgType::Heartbeat, static_cast<EventId>(0), &seq, now);
+            esp_err_t err = espnow_send_frame(hb);
+            if (err != ESP_OK) ESP_LOGE(TAG, "TX heartbeat: %s", esp_err_to_name(err));
+            last_hb = now;
+        }
 
         // Log on change only, so the console stays readable. The buzzer figure is
         // read back from the pin, not the value just written - that difference is
@@ -139,13 +201,17 @@ extern "C" void app_main(void)
 
         // buzzer is read back from the pin, not taken from `alarm`: the platform
         // must show what the hardware is doing, not what the code intended.
-        char body[160];
+        // The settings travel with the state, so after a command the platform
+        // shows the value the node is using, not the one it sent.
+        char body[256];
         snprintf(body, sizeof body,
-                 "\"warm\":%s,\"motion\":%s,\"alarm\":%s,\"buzzer\":%d,\"access\":%s,\"led\":\"%s\"",
+                 "\"warm\":%s,\"motion\":%s,\"alarm\":%s,\"buzzer\":%d,\"access\":%s,\"peer\":%s,\"led\":\"%s\","
+                 "\"buzzer_enabled\":%ld,\"warmup_s\":%ld,\"publish_ms\":%ld",
                  warm ? "true" : "false", motion ? "true" : "false", alarm ? "true" : "false",
-                 (int)hal.alarmActive(), access ? "true" : "false", led);
-        if (strcmp(body, last_body) != 0 || now - last_pub >= PUBLISH_MS) {
-            char json[224];
+                 (int)hal.alarmActive(), access ? "true" : "false", peer ? "true" : "false", led,
+                 (long)cfg[BUZZER_ENABLED], (long)cfg[WARMUP_S], (long)cfg[PUBLISH_MS]);
+        if (strcmp(body, last_body) != 0 || now - last_pub >= (uint32_t)cfg[PUBLISH_MS]) {
+            char json[320];
             snprintf(json, sizeof json, "{\"node\":\"a\",\"up\":%lu,%s}", (unsigned long)now, body);
             mqtt_publish_state(json);
             strcpy(last_body, body);
