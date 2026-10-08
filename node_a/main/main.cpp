@@ -23,7 +23,12 @@ static const uint32_t ACCESS_LEASE_MS = 3000;
 
 // node_b has no other way to know this node is alive: a motion alert only
 // goes out when something happens. node_b treats 3 s of silence as a lost link.
+// While the alarm is latched, MotionStarted takes the heartbeat's place.
 static const uint32_t HEARTBEAT_MS = 1000;
+
+// node_b blinks on this node's clock (it learns it from every frame), so with
+// the same half-period both LEDs blink together.
+static const uint32_t BLINK_HALF_MS = 500;
 
 // Any valid frame from node_b counts as a sign of life; it sends at least
 // one per second.
@@ -32,7 +37,7 @@ static const uint32_t PEER_TIMEOUT_MS = 3000;
 // Remotely controllable variables. The platform addresses them by name; the
 // index is the enum value. Values reset to the defaults on reboot, and the
 // state report always carries the values actually in effect.
-enum Var { BUZZER_ENABLED, WARMUP_S, PUBLISH_MS, VAR_COUNT };
+enum Var { BUZZER_ENABLED, WARMUP_S, PUBLISH_MS, ACCESS, BUZZER_ON, VAR_COUNT };
 static const VarSpec VARS[VAR_COUNT] = {
     // 0 = silent alarm: the LED still turns red and node_b is still alerted.
     {"buzzer_enabled", 0, 1},
@@ -40,8 +45,29 @@ static const VarSpec VARS[VAR_COUNT] = {
     {"warmup_s", 0, 300},
     // The platform marks a node offline after 3 s without a report.
     {"publish_ms", 250, 2000},
+    // The platform's Open/Close button goes to both nodes on ilu/all/cmd.
+    // Here it acts on the access lease (see apply_access), so node_b's own
+    // frames still decide within 3 s and a platform "open" alone cannot keep
+    // the room disarmed.
+    {"access", 0, 1},
+    // Manual buzzer from the platform, independent of the alarm.
+    {"buzzer_on", 0, 1},
 };
-static int32_t cfg[VAR_COUNT] = {1, 60, 1000};
+static int32_t cfg[VAR_COUNT] = {1, 60, 1000, 0, 0};
+
+// Access lease state. File scope because both the command handler and the
+// ESP-NOW receive path write it; both run in the main task.
+static bool     open_heard   = false;
+static uint32_t last_open_ms = 0;
+
+// An "access" command from the platform is applied exactly like a frame from
+// node_b: open starts a lease, close ends it at once. Closing immediately is
+// the safe direction; opening only lasts while node_b keeps confirming it.
+static void apply_access(bool open, uint32_t now)
+{
+    open_heard   = open;
+    last_open_ms = now;
+}
 
 static Frame make_frame(MsgType type, EventId event, uint16_t *seq, uint32_t now)
 {
@@ -58,11 +84,12 @@ static Frame make_frame(MsgType type, EventId event, uint16_t *seq, uint32_t now
 // Applies every queued command and acknowledges its execution. Runs at the
 // top of the loop, so a new value already drives this iteration's outputs
 // and the state report that follows.
-static void handle_commands()
+static void handle_commands(uint32_t now)
 {
     Command c;
     while (command_receive(&c)) {
         ApplyResult r = command_apply(VARS, cfg, VAR_COUNT, c);
+        if (r.stage == AckStage::Applied && r.index == ACCESS) apply_access(cfg[ACCESS] != 0, now);
         bool known = r.index >= 0;
         char ack[160];
         if (ack_format(ack, sizeof ack, 'a', c.id, c.var, r.stage, r.reason, known, known ? cfg[r.index] : 0)) {
@@ -105,9 +132,11 @@ extern "C" void app_main(void)
     bool     prev = false;
     bool     prev_alarm = false;
     uint16_t seq  = 0;
-    bool     open_heard   = false;
-    uint32_t last_open_ms = 0;
     bool     prev_access  = false;
+    // Latched alarm: set by motion while armed, cleared only when access
+    // opens (switch or platform). The buzzer keeps sounding until then.
+    bool     latched      = false;
+    bool     near_b       = false;   // node_b reports someone in its near window
     bool     peer_heard   = false;
     uint32_t last_peer_ms = 0;
     bool     prev_peer    = false;
@@ -116,9 +145,9 @@ extern "C" void app_main(void)
     uint32_t last_pub     = 0;
 
     while (true) {
-        handle_commands();
-
         uint32_t now    = hal.nowMs();
+        handle_commands(now);
+
         bool     warm   = (now - t0) >= (uint32_t)cfg[WARMUP_S] * 1000;
         bool     motion = hal.motionDetected();
 
@@ -128,10 +157,13 @@ extern "C" void app_main(void)
             last_peer_ms = now;
             if (f.type != static_cast<uint8_t>(MsgType::Event)) continue;
             if (f.event == static_cast<uint8_t>(EventId::AccessOpen)) {
-                open_heard   = true;
-                last_open_ms = now;
+                apply_access(true, now);
             } else if (f.event == static_cast<uint8_t>(EventId::AccessClosed)) {
-                open_heard = false;
+                apply_access(false, now);
+            } else if (f.event == static_cast<uint8_t>(EventId::NearOn)) {
+                near_b = true;
+            } else if (f.event == static_cast<uint8_t>(EventId::NearOff)) {
+                near_b = false;
             }
         }
         bool access = open_heard && (now - last_open_ms) < ACCESS_LEASE_MS;
@@ -147,47 +179,59 @@ extern "C" void app_main(void)
             prev_peer = peer;
         }
 
-        // node_b gets the same signal node_a acts on, so warm-up false
-        // triggers and authorised movement never reach it.
-        bool alarm = warm && motion && !access;
+        // Warm-up false triggers and authorised movement never latch, so they
+        // never reach node_b either.
+        if (access) latched = false;
+        else if (warm && motion) latched = true;
+        bool alarm = latched;
+        if (alarm != prev_alarm) {
+            ESP_LOGW(TAG, "%s", alarm ? "ALARM latched: buzzer on until access opens" : "alarm cleared: access open");
+        }
 
+        // The manual buzzer from the platform sounds on its own; the alarm
+        // sounds unless buzzer_enabled made it a silent alarm.
+        hal.setBuzzer((alarm && cfg[BUZZER_ENABLED] != 0) || cfg[BUZZER_ON] != 0);
+
+        // Same priority order as node_b, so both LEDs always show the same
+        // colour. node_b's near window is mirrored here; yellow is only this
+        // node's PIR warm-up, which node_b has no equivalent of.
+        bool        blink_on = ((now / BLINK_HALF_MS) % 2) == 0;
         const char *led;
-        if (access) {
-            hal.setBuzzer(false);
+        if (alarm) {
+            hal.setLed(blink_on ? Led::Red : Led::Off);
+            led = "red_blink";
+        } else if (!peer) {
+            hal.setLed(blink_on ? Led::Blue : Led::Off);
+            led = "blue_blink";
+        } else if (access) {
             hal.setLed(Led::Blue);
             led = "blue";
-        } else if (alarm) {
-            hal.setBuzzer(cfg[BUZZER_ENABLED] != 0);
+        } else if (!warm) {
+            hal.setLed(Led::Yellow);
+            led = "yellow";
+        } else if (near_b) {
+            hal.setLed(Led::Green);
+            led = "green";
+        } else {
             hal.setLed(Led::Red);
             led = "red";
-        } else {
-            hal.setBuzzer(false);
-            // Yellow while warming up, green once the sensor can be trusted.
-            hal.setLed(warm ? Led::Green : Led::Yellow);
-            led = warm ? "green" : "yellow";
         }
 
-        // Rising edge only: sending every iteration would flood the link with
-        // ten frames a second for as long as someone stays in front of the PIR.
-        if (alarm && !prev_alarm) {
-            Frame m = make_frame(MsgType::Event, EventId::MotionStarted, &seq, now);
-            esp_err_t err = espnow_send_frame(m);
-            if (err == ESP_OK) {
-                ESP_LOGI(TAG, "TX MotionStarted seq %u: ESP_OK", (unsigned)m.seq);
-            } else {
-                ESP_LOGE(TAG, "TX MotionStarted seq %u: %s", (unsigned)m.seq, esp_err_to_name(err));
+        // MotionStarted at once on the latch's rising edge, then every second
+        // in place of the heartbeat while the alarm stays latched: a lost
+        // frame cannot leave node_b unaware. Shares the sequence counter with
+        // the heartbeat, so a gap node_b sees means lost frames.
+        if ((alarm && !prev_alarm) || now - last_hb >= HEARTBEAT_MS) {
+            Frame out = alarm ? make_frame(MsgType::Event, EventId::MotionStarted, &seq, now)
+                              : make_frame(MsgType::Heartbeat, static_cast<EventId>(0), &seq, now);
+            esp_err_t err = espnow_send_frame(out);
+            if (err != ESP_OK) {
+                ESP_LOGE(TAG, "TX %s seq %u: %s", alarm ? "MotionStarted" : "heartbeat",
+                         (unsigned)out.seq, esp_err_to_name(err));
             }
-        }
-        prev_alarm = alarm;
-
-        // Shares the sequence counter with the events, so a gap node_b sees
-        // means lost frames, whatever their type.
-        if (now - last_hb >= HEARTBEAT_MS) {
-            Frame hb = make_frame(MsgType::Heartbeat, static_cast<EventId>(0), &seq, now);
-            esp_err_t err = espnow_send_frame(hb);
-            if (err != ESP_OK) ESP_LOGE(TAG, "TX heartbeat: %s", esp_err_to_name(err));
             last_hb = now;
         }
+        prev_alarm = alarm;
 
         // Log on change only, so the console stays readable. The buzzer figure is
         // read back from the pin, not the value just written - that difference is
@@ -205,11 +249,12 @@ extern "C" void app_main(void)
         // shows the value the node is using, not the one it sent.
         char body[256];
         snprintf(body, sizeof body,
-                 "\"warm\":%s,\"motion\":%s,\"alarm\":%s,\"buzzer\":%d,\"access\":%s,\"peer\":%s,\"led\":\"%s\","
-                 "\"buzzer_enabled\":%ld,\"warmup_s\":%ld,\"publish_ms\":%ld",
+                 "\"warm\":%s,\"motion\":%s,\"alarm\":%s,\"buzzer\":%d,\"access\":%s,\"near\":%s,\"peer\":%s,\"led\":\"%s\","
+                 "\"buzzer_on\":%ld,\"buzzer_enabled\":%ld,\"warmup_s\":%ld,\"publish_ms\":%ld",
                  warm ? "true" : "false", motion ? "true" : "false", alarm ? "true" : "false",
-                 (int)hal.alarmActive(), access ? "true" : "false", peer ? "true" : "false", led,
-                 (long)cfg[BUZZER_ENABLED], (long)cfg[WARMUP_S], (long)cfg[PUBLISH_MS]);
+                 (int)hal.alarmActive(), access ? "true" : "false", (near_b && peer) ? "true" : "false",
+                 peer ? "true" : "false", led,
+                 (long)cfg[BUZZER_ON], (long)cfg[BUZZER_ENABLED], (long)cfg[WARMUP_S], (long)cfg[PUBLISH_MS]);
         if (strcmp(body, last_body) != 0 || now - last_pub >= (uint32_t)cfg[PUBLISH_MS]) {
             char json[320];
             snprintf(json, sizeof json, "{\"node\":\"a\",\"up\":%lu,%s}", (unsigned long)now, body);

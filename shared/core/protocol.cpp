@@ -11,7 +11,9 @@ static bool event_matches_type(uint8_t type, uint8_t event)
         return event == static_cast<uint8_t>(EventId::MotionStarted) ||
                event == static_cast<uint8_t>(EventId::MotionStopped) ||
                event == static_cast<uint8_t>(EventId::AccessOpen)    ||
-               event == static_cast<uint8_t>(EventId::AccessClosed);
+               event == static_cast<uint8_t>(EventId::AccessClosed)  ||
+               event == static_cast<uint8_t>(EventId::NearOn)        ||
+               event == static_cast<uint8_t>(EventId::NearOff);
     }
     return false;  // unknown type
 }

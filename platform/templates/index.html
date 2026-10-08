@@ -56,6 +56,7 @@
   .led.yellow { background: #facc15; box-shadow: 0 0 18px 4px #facc1588; }
   .led.blue   { background: #3b82f6; box-shadow: 0 0 18px 4px #3b82f688; }
   .led.red_blink { background: #ef4444; box-shadow: 0 0 18px 4px #ef444488; animation: blink 1s steps(1) infinite; }
+  .led.blue_blink { background: #3b82f6; box-shadow: 0 0 18px 4px #3b82f688; animation: blink 1s steps(1) infinite; }
   @keyframes blink { 50% { background: var(--led-off); box-shadow: none; } }
 
   .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
@@ -68,7 +69,7 @@
 
   .dist { margin-top: 12px; }
   .bar { position: relative; height: 14px; border-radius: 7px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
-  .bar .zone { position: absolute; top: 0; bottom: 0; background: #facc1540; border-left: 1px dashed var(--warn); border-right: 1px dashed var(--warn); }
+  .bar .zone { position: absolute; top: 0; bottom: 0; background: #22c55e40; border-left: 1px dashed var(--ok); border-right: 1px dashed var(--ok); }
   .bar .fill { position: absolute; top: 0; bottom: 0; left: 0; background: var(--access); opacity: .7; transition: width .2s; }
   .scale { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 3px; }
   canvas.spark { width: 100%; height: 70px; display: block; margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; }
@@ -126,6 +127,18 @@
   .chip.applied  { color: var(--ok); }    .chip.rejected { color: var(--bad); }
   .chip.timeout  { color: var(--bad); border-style: dashed; }
   .chip small { font-weight: 400; }
+  .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .action { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; }
+  .action .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+  .action .now { font-size: 15px; font-weight: 600; }
+  .action button { font: inherit; font-size: 16px; font-weight: 700; padding: 12px; border-radius: 10px; cursor: pointer;
+                   border: none; color: #fff; background: var(--access); }
+  .action button.close { background: var(--bad); }
+  .action button.off { background: var(--ink); color: var(--panel); }
+  .action button:disabled { opacity: .4; cursor: not-allowed; }
+  .action .why { color: var(--muted); font-size: 12px; }
+  details.advanced { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 10px; }
+  details.advanced form { margin-top: 10px; }
   .exports { margin-top: 12px; font-size: 12px; color: var(--muted); }
   .exports a { color: var(--access); margin-right: 10px; }
   @media (max-width: 560px) { table.cmds .when { display: none; } }
@@ -188,6 +201,8 @@
         <div class="field"><div class="k">Alarm</div><div class="v" id="a-alarm">—</div></div>
         <div class="field"><div class="k">Buzzer</div><div class="v" id="a-buzzer">—</div><div class="note">read back from the pin</div></div>
         <div class="field"><div class="k">Access lease</div><div class="v" id="a-access">—</div><div class="note">heard from node_b</div></div>
+        <div class="field"><div class="k">Someone at the door</div><div class="v" id="a-near">—</div><div class="note">mirrored from node_b</div></div>
+        <div class="field"><div class="k">Manual buzzer</div><div class="v" id="a-buzzer_on">—</div><div class="note">set from the platform</div></div>
         <div class="field"><div class="k">ESP-NOW link</div><div class="v" id="a-peer">—</div><div class="note">frames from node_b</div></div>
         <div class="field"><div class="k">Uptime</div><div class="v" id="a-up">—</div></div>
       </div>
@@ -207,7 +222,7 @@
         <div class="right"><span class="pill bad" id="online-b">Offline</span><div class="age" id="age-b">no report yet</div></div>
       </div>
       <div class="fields">
-        <div class="field"><div class="k">Access switch</div><div class="v" id="b-access">—</div></div>
+        <div class="field"><div class="k">Access</div><div class="v" id="b-access">—</div><div class="note" id="b-access_by">&nbsp;</div></div>
         <div class="field"><div class="k">Intrusion alert</div><div class="v" id="b-alert">—</div></div>
         <div class="field"><div class="k">Someone near</div><div class="v" id="b-near">—</div></div>
         <div class="field"><div class="k">Distance</div><div class="v" id="b-cm">—</div></div>
@@ -232,6 +247,23 @@
 
   <section class="panel">
     <h2>Control</h2>
+    <div class="actions">
+      <div class="action">
+        <div class="k">Access · node_b (sent to both nodes)</div>
+        <div class="now" id="act-access-now">—</div>
+        <button id="act-access" type="button" disabled>—</button>
+        <div class="why">One publish on ilu/all/cmd: node_b opens or closes, node_a starts or ends its lease. Both answer.
+          The physical switch still works; whichever acted last wins.</div>
+      </div>
+      <div class="action">
+        <div class="k">Buzzer · node_a</div>
+        <div class="now" id="act-buzzer-now">—</div>
+        <button id="act-buzzer" type="button" disabled>—</button>
+        <div class="why">Manual on/off, independent of the alarm. A latched alarm keeps sounding until access opens.</div>
+      </div>
+    </div>
+    <div class="hint" id="act-hint"></div>
+    <details class="advanced"><summary>Advanced: node settings (each node exposes at least two, requirement #5)</summary>
     <form class="control" id="control" autocomplete="off">
       <div class="f">Target
         <span class="seg" id="target">
@@ -245,6 +277,7 @@
       <button type="submit" id="send">Send</button>
     </form>
     <div class="hint" id="hint"></div>
+    </details>
     <table class="cmds">
       <thead><tr><th class="when">Sent</th><th>Command</th><th>Target</th><th>Node answers</th></tr></thead>
       <tbody id="cmds"><tr><td colspan="4" class="empty">No commands sent yet.</td></tr></tbody>
@@ -308,7 +341,9 @@ function renderNode(p) {
   if (n === "a") {
     setV("a-warm", s.warm ? "Ready" : "Warming up", s.warm ? "on-ok" : "on-warn");
     setV("a-motion", s.motion ? "DETECTED" : "Clear", s.motion ? "on-warn" : "");
-    setV("a-alarm", s.alarm ? "ON" : "Off", s.alarm ? "on-alarm" : "");
+    setV("a-alarm", s.alarm ? "LATCHED" : "Off", s.alarm ? "on-alarm" : "");
+    setV("a-near", s.near == null ? "—" : s.near ? "Yes" : "No", s.near ? "on-ok" : "");
+    setV("a-buzzer_on", s.buzzer_on == null ? "—" : s.buzzer_on ? "ON" : "Off", s.buzzer_on ? "on-alarm" : "");
     setV("a-buzzer", s.buzzer ? "Sounding" : "Silent", s.buzzer ? "on-alarm" : "");
     setV("a-access", s.access ? "Disarmed" : "Armed", s.access ? "on-access" : "on-ok");
     setPeer("a-peer", s.peer);
@@ -317,9 +352,10 @@ function renderNode(p) {
     setV("a-warmup_s", s.warmup_s == null ? "—" : s.warmup_s + " s");
     setV("a-publish_ms", s.publish_ms == null ? "—" : s.publish_ms + " ms");
   } else {
-    setV("b-access", s.access ? "OPEN" : "Closed", s.access ? "on-ok" : "");
+    setV("b-access", s.access ? "OPEN" : "Closed", s.access ? "on-access" : "");
+    $("b-access_by").textContent = s.access_by ? "last changed by " + s.access_by : "\u00a0";
     setV("b-alert", s.alert ? "ALERT" : "None", s.alert ? "on-alarm" : "");
-    setV("b-near", s.near ? "Yes" : "No", s.near ? "on-warn" : "");
+    setV("b-near", s.near ? "Yes" : "No", s.near ? "on-ok" : "");
     setV("b-cm", s.cm ? s.cm + " cm" : "no echo");
     setPeer("b-peer", s.peer);
     setV("b-up", fmtUp(s.up));
@@ -334,7 +370,42 @@ function renderNode(p) {
     $("b-bar").style.width = Math.min(100, s.cm || 0) + "%";
     if (s.cm) distHist.push([Date.now(), s.cm]);
   }
+  renderActions();
 }
+
+// --- The two main buttons ----------------------------------------------------
+// Each button shows the state the node reported and offers the opposite. The
+// label changes only when a report confirms the change, never on click.
+function renderActions() {
+  const b = nodes.b && nodes.b.state, a = nodes.a && nodes.a.state;
+  const acc = $("act-access"), buz = $("act-buzzer");
+  if (b) {
+    $("act-access-now").textContent = (b.access ? "Open" : "Closed") + (b.access_by ? " · by " + b.access_by : "");
+    acc.textContent = b.access ? "Close access" : "Open access";
+    acc.className = b.access ? "close" : "";
+    acc.dataset.value = b.access ? 0 : 1;
+  }
+  acc.disabled = !b;
+  if (a && a.buzzer_on != null) {
+    $("act-buzzer-now").textContent = a.buzzer_on ? "Manual buzzer ON" : "Manual buzzer off";
+    buz.textContent = a.buzzer_on ? "Turn buzzer OFF" : "Turn buzzer ON";
+    buz.className = a.buzzer_on ? "off" : "";
+    buz.dataset.value = a.buzzer_on ? 0 : 1;
+  }
+  buz.disabled = !(a && a.buzzer_on != null);
+}
+
+function sendAction(target, variable, btn) {
+  btn.disabled = true;
+  socket.emit("command", { target, var: variable, value: Number(btn.dataset.value) }, res => {
+    btn.disabled = false;
+    const h = $("act-hint");
+    if (res && res.ok) { h.className = "hint"; h.textContent = `Sent as ${res.id}; see the node answers below.`; }
+    else { h.className = "hint err"; h.textContent = "Not sent: " + (res ? res.error : "no answer from the dashboard server"); }
+  });
+}
+$("act-access").addEventListener("click", () => sendAction("all", "access", $("act-access")));
+$("act-buzzer").addEventListener("click", () => sendAction("a", "buzzer_on", $("act-buzzer")));
 
 function setPeer(id, peer) {
   if (peer == null) { setV(id, "—"); return; }
@@ -347,10 +418,13 @@ function setPeer(id, peer) {
 const VARS = {
   a: [["buzzer_enabled", 0, 1, "0 = silent alarm (LED and node_b alert only)"],
       ["warmup_s", 0, 300, "PIR warm-up in seconds"],
-      ["publish_ms", 250, 2000, "state report period"]],
+      ["publish_ms", 250, 2000, "state report period"],
+      ["access", 0, 1, "starts (1) or ends (0) the access lease; node_b's frames still decide"],
+      ["buzzer_on", 0, 1, "manual buzzer"]],
   b: [["near_cm", 5, 100, "upper edge of the near window"],
       ["repeat_ms", 200, 1000, "access-state repeat to node_a"],
-      ["publish_ms", 250, 2000, "state report period"]],
+      ["publish_ms", 250, 2000, "state report period"],
+      ["access", 0, 1, "1 = open, 0 = closed; the switch also changes it"]],
 };
 const commands = new Map();   // id -> command view, newest last
 let cmdTimeout = 3;
@@ -475,7 +549,7 @@ function drawSpark() {
   while (distHist.length && now - distHist[0][0] > span) distHist.shift();
   const css = getComputedStyle(document.documentElement);
   const y = cm => h - 4 - (Math.min(cm, max) / max) * (h - 8);
-  g.fillStyle = "#facc1530"; g.fillRect(0, y(nearMax), w, y(NEAR_MIN) - y(nearMax));
+  g.fillStyle = "#22c55e30"; g.fillRect(0, y(nearMax), w, y(NEAR_MIN) - y(nearMax));
   if (distHist.length < 2) return;
   g.strokeStyle = css.getPropertyValue("--access"); g.lineWidth = 2; g.beginPath();
   distHist.forEach(([t, cm], i) => { const x = w - ((now - t) / span) * w; i ? g.lineTo(x, y(cm)) : g.moveTo(x, y(cm)); });

@@ -4,9 +4,11 @@ Read this first. Last updated: Thursday 8 October 2026 (demo day), branch `v2.0`
 
 **Branches.** `main` = the version verified on hardware on 8 October (no commands). `v2.0` = D3 +
 D4 below: commands, acks, controllable variables, A→B heartbeat, MQTT Last Will, SQLite history.
-v2.0 was written on a Windows machine without the boards: it compiles and passes the host and
-platform tests, but **has not run on hardware**. If it fails at the demo, `git switch main` and
-reflash. The README's "Verification" section is the honest status.
+v2.0 was written on a Windows machine without the boards, then **flashed and checked on both
+boards on 8 October (Linux laptop)**: commands to one node and to both, received/applied/rejected
+acks, malformed commands, node loss (heartbeat, lease, watchdog, Last Will) all passed. Still open:
+checks that need a person at the sensors (see "Next steps"). If v2.0 fails at the demo,
+`git switch main` and reflash. The README's "Verification" section is the honest status.
 
 Two ESP32 nodes (C++ on ESP-IDF v5.5.5, no Arduino) talk directly over ESP-NOW, and both publish
 their state over Wi-Fi/MQTT to a Mosquitto broker on the laptop. A Flask + Socket.IO dashboard
@@ -57,9 +59,11 @@ When in doubt: `esptool.py -p <port> read_mac` — the MAC is burned in, it cann
 
 - Wi-Fi: `CLARO_2.4GHz_768DE4`, 2.4 GHz, **channel 11**. Credentials live only in
   `shared/net/secrets.h` (git-ignored; template in `secrets.h.example`).
-- Laptop: `192.168.1.110` (Ethernet, used as broker address) and `192.168.1.187` (Wi-Fi).
-  **DHCP can change `.110` after a router reboot** — reserve it in the router before Thursday,
-  or update `MQTT_BROKER_URI` in `secrets.h` and reflash both nodes.
+- Broker address: **whatever IP is in `MQTT_BROKER_URI` (`secrets.h`) when the nodes were built**;
+  the laptop must have that IP. There is no fixed address. On 8 October it was `192.168.1.188`
+  (laptop on Wi-Fi, `wlo1`); earlier `.110` (Ethernet). DHCP can change it — reserve it in the
+  router, or update `secrets.h` and reflash both nodes. `secrets.h` is git-ignored, so another
+  computer needs its own copy with its own IP.
 - Mosquitto 2.0.11 runs as a system service. `platform/mosquitto/ilu.conf` (installed to
   `/etc/mosquitto/conf.d/`) makes it listen on `0.0.0.0:1883` with anonymous access —
   a deliberate, documented prototype shortcut (no auth, no TLS).
@@ -91,12 +95,12 @@ idf.py -C node_a -p <node_a by-id path> flash
 idf.py -C node_a -p /dev/ttyUSB0 monitor          # interactive: user runs it; Ctrl+] exits
 
 # Watch raw MQTT traffic
-mosquitto_sub -h 192.168.1.110 -t 'ilu/#' -v
+mosquitto_sub -h <IP in secrets.h> -t 'ilu/#' -v
 
 # Dashboard (from the repo root). env -u PYTHONPATH keeps ROS Humble's packages,
 # which the user's shell profile adds to PYTHONPATH, out of the venv.
 env -u PYTHONPATH platform/.venv/bin/python platform/app.py
-# → open http://localhost:5000  (or http://192.168.1.110:5000 from another device on the LAN)
+# → open http://localhost:5000  (or http://<laptop-ip>:5000 from another device on the LAN)
 ```
 
 `platform/.venv` is git-ignored. Recreate it with:
@@ -119,9 +123,9 @@ but tight. If it runs out, switch to the "Single factory app (large)" partition 
 | `shared/net/secrets.h` | git-ignored credentials + `MQTT_BROKER_URI` |
 | `test/test_protocol.cpp` | host tests for the ESP-NOW frame, one rule broken per case |
 | `test/test_command.cpp` | host tests for the command parser, range check and ack format |
-| `test/test_platform.py` | end to end: own amqtt broker + real `app.py` + `sim_nodes.py`, driven over Socket.IO (40 checks) |
-| `node_a/main/` | PIR + buzzer + LED, access lease, heartbeat to node_b every 1 s, peer tracking, vars `buzzer_enabled` / `warmup_s` / `publish_ms`, publishes `ilu/a/state` |
-| `node_b/main/` | HC-SR04 + switch + LED, sends access state every `repeat_ms`, receives alerts + heartbeats, blue when node_a silent 3 s, vars `near_cm` / `repeat_ms` / `publish_ms`, publishes `ilu/b/state` |
+| `test/test_platform.py` | end to end: own amqtt broker + real `app.py` + `sim_nodes.py`, driven over Socket.IO (46 checks) |
+| `node_a/main/` | PIR + buzzer + LED, access lease (`apply_access`), latched alarm, mirrors node_b's near, heartbeat / repeated MotionStarted every 1 s, vars `buzzer_enabled` / `warmup_s` / `publish_ms` / `access` / `buzzer_on`, publishes `ilu/a/state` |
+| `node_b/main/` | HC-SR04 + switch (acts on flips) + LED, sends access + near state every `repeat_ms`, blinks on node_a's clock, vars `near_cm` / `repeat_ms` / `publish_ms` / `access`, publishes `ilu/b/state` with `access_by` |
 | `platform/app.py` | MQTT (state, ack, status) → state store → Socket.IO push; commands with per-node tracking (pending/received/applied/rejected/timeout 3 s); timeline + offline watchdog; SQLite `history.db` + `/export/<table>.csv`. Env: `ILU_BROKER`, `ILU_BROKER_PORT`, `ILU_PORT`, `ILU_DB` |
 | `platform/templates/index.html` | The dashboard page |
 | `platform/static/socket.io.min.js` | Vendored Socket.IO 4.7.5 client (works without internet) |
@@ -138,13 +142,28 @@ commands in D3** (the esp-mqtt event handler runs in its own task).
 
 ## Behaviour
 
-| node_b switch | node_b LED | node_a |
-|---|---|---|
-| **Off** = access closed (default) | red; yellow when something is 4–15 cm away | motion (after warm-up) → buzzer + red, sends `MotionStarted` on the rising edge |
-| Off, after `MotionStarted` received | **red blinking until the switch is turned on** | — |
-| **On** = access open | green; clears any alert | **blue, buzzer silent, sends nothing** |
+Since 8 Oct (user's request): **both LEDs always show the same colour.**
 
-**Fail-safe access lease:** node_b sends `AccessOpen`/`AccessClosed` on every switch change and
+| Situation | LED on both nodes | Buzzer |
+|---|---|---|
+| access open (switch or dashboard) | blue | silent |
+| closed, nobody near node_b | red | silent |
+| closed, someone 4–`near_cm` cm from node_b | green | silent |
+| motion while closed → **alarm latched** | red blinking, in step (node_b blinks on node_a's clock) | **sounds until access opens** |
+| peer not heard for 3 s | blue blinking (on the node that lost the other) | — |
+
+Priority on both: alarm → lost link → open → (node_a: warm-up yellow) → near → red. Opening access
+(switch or the dashboard's button) clears the alarm on both. **Switch + dashboard: last action
+wins**; the switch acts on a flip, not its position; node_b reports `access_by`. After a reboot
+node_b starts from the switch position. node_a repeats `MotionStarted` every 1 s while latched
+(in place of the heartbeat). node_b sends `NearOn`/`NearOff` with the access state.
+
+Dashboard: two big buttons — **Open/Close access** (`access` on `ilu/all/cmd`, both nodes ack;
+node_a applies it to its lease via `apply_access()`) and **Buzzer ON/OFF** (`buzzer_on` to node_a,
+manual, independent of the alarm). The old settings stay in a collapsed "Advanced" panel so #5
+still holds (user chose to keep them).
+
+**Fail-safe access lease:** node_b sends `AccessOpen`/`AccessClosed` on every change and
 repeats it every 1 s. node_a counts access as open only while an `AccessOpen` from the last 3 s
 backs it. A dead node_b, lost frame or broken link all end **armed**, never disarmed. Every
 message is idempotent, so no duplicate dropping; `seq` gaps are only logged.
@@ -152,8 +171,8 @@ message is idempotent, so no duplicate dropping; `seq` gaps are only logged.
 ### MQTT state messages (each node: every 1 s, and at once when anything but uptime/distance changes)
 
 ```
-ilu/a/state {"node":"a","up":26480,"warm":true,"motion":false,"alarm":false,"buzzer":0,"access":false,"peer":true,"led":"green","buzzer_enabled":1,"warmup_s":60,"publish_ms":1000}
-ilu/b/state {"node":"b","up":26700,"cm":40,"near":false,"access":false,"alert":false,"peer":true,"led":"red","near_cm":15,"repeat_ms":1000,"publish_ms":1000}
+ilu/a/state {"node":"a","up":29557,"warm":true,"motion":false,"alarm":false,"buzzer":0,"access":false,"near":true,"peer":true,"led":"green","buzzer_on":0,"buzzer_enabled":1,"warmup_s":60,"publish_ms":1000}
+ilu/b/state {"node":"b","up":29603,"cm":9,"near":true,"access":false,"access_by":"platform","alert":false,"peer":true,"led":"green","near_cm":15,"repeat_ms":1000,"publish_ms":1000}
 ```
 (v2.0 adds `peer` and the settings; `main` has the shorter form.)
 
@@ -212,17 +231,16 @@ silence (checked every 0.5 s); `up` going backwards = "Node rebooted".
 
 ## Next steps, in order
 
-1. **Flash v2.0 and check on hardware** (needs the boards):
-   - Both boot, join Wi-Fi, MQTT connects; `mosquitto_sub -t 'ilu/#' -v` shows `ilu/a/status online`.
-   - Dashboard → Control: `near_cm = 25` to node_b → chip "applied = 25", card shows 25 cm, the
-     yellow zone on the bar moves, and a hand at 20 cm turns node_b yellow.
-   - `near_cm = 500` → "rejected: out of range · still 25".
-   - Both → `publish_ms = 500` → two "applied" chips, reports twice as often.
-   - Both → `near_cm = 30` → node_a "rejected: unknown variable", node_b "applied".
-   - `buzzer_enabled = 0` to node_a, wave → LED red and node_b blinks, but no sound.
-   - Unplug node_a → node_b LED blue within ~3 s; dashboard: node_a offline (3 s), Last Will
-     after ~7.5 s.
-   - The old checks still pass: A→B alert, switch → node_a blue, unplug node_b → node_a armed.
+1. **v2.0 on hardware — done on 8 October** (results in the README's Verification): boot +
+   status online; `near_cm` 25 applied / 500 rejected; Both `near_cm` (a unknown variable, b
+   applied); Both `publish_ms = 500` (~1.8 reports/s); node_a / node_b held in reset → offline
+   ~2.5 s, peer lost ~3 s, node_a re-arms at 3.0 s, Last Will ~9–11 s, commands time out.
+   **Still needs a person at the boards:**
+   - HC-SR04 reported `cm: 0` (no echo) the whole session — check aim/wiring; then a hand at
+     20 cm with `near_cm = 25` should turn node_b yellow.
+   - Switch off, wave → node_b blinks red, dashboard ALERT (A→B on v2.0).
+   - `buzzer_enabled = 0`, wave → LED red and node_b blinks, no sound.
+   - Switch off, unplug node_a → node_b LED blue by eye.
 2. If something fails there, `git switch main` for the demo and debug afterwards.
 3. Afterwards: merge `v2.0` into `develop` → `main` once verified on hardware.
 

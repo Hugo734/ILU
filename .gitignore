@@ -34,6 +34,9 @@ __pycache__/
 venv/
 *.egg-info/
 *.db
+# SQLite write-ahead log, created next to the .db while the platform runs.
+*.db-wal
+*.db-shm
 *.sqlite
 *.log
 

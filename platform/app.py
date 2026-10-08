@@ -77,14 +77,19 @@ WATCHED = {
     "a": [
         ("warm", "PIR warm-up finished, sensor trusted", None, "info"),
         ("motion", "Motion detected by PIR", "Motion cleared", "info"),
-        ("alarm", "ALARM: MotionStarted sent to node_b", "Alarm off", "alarm"),
+        ("alarm", "ALARM latched: buzzer on, red blinking, MotionStarted sent to node_b",
+         "Alarm cleared: access opened", "alarm"),
         ("access", "Access lease active: alarm disarmed (blue)", "Access closed: alarm armed", "access"),
+        ("buzzer_on", "Manual buzzer ON", "Manual buzzer OFF", "info"),
         ("peer", "ESP-NOW link to node_b up", "ESP-NOW link to node_b LOST: node_a stays armed", "link"),
     ],
     "b": [
-        ("access", "Switch ON: access open", "Switch OFF: access closed", "access"),
-        ("alert", "ALERT: intrusion reported by node_a (red blinking)", "Alert cleared by access switch", "alarm"),
-        ("peer", "ESP-NOW link to node_a up", "ESP-NOW link to node_a LOST: LED blue, room not watched", "link"),
+        # The text gains " (by switch|platform)" from the report's access_by.
+        ("access", "Access OPEN", "Access CLOSED", "access"),
+        ("alert", "ALERT: intrusion reported by node_a (red blinking)", "Alert cleared: access opened", "alarm"),
+        # No LED colour in the text: blue is only shown when access is closed
+        # and no alert is active, and the card already shows the reported LED.
+        ("peer", "ESP-NOW link to node_a up", "ESP-NOW link to node_a LOST: room not watched", "link"),
     ],
 }
 
@@ -154,6 +159,8 @@ def diff_events(n, old, new):
     for field, on_text, off_text, kind in WATCHED[n]:
         if field in new and old.get(field) != new[field]:
             text = on_text if new[field] else off_text
+            if text and field == "access" and "access_by" in new:
+                text += f" (by {new['access_by']})"
             if text:
                 add_event(n, text, kind, up)
     # What the node now reports is the proof a command took effect; the ack

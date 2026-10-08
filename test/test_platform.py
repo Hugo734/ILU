@@ -153,6 +153,22 @@ def main():
               "node_a rejected a variable it does not have")
         check(cmds[cid]["nodes"]["b"]["stage"] == "applied", "node_b applied the same broadcast")
 
+        # --- The two dashboard buttons --------------------------------------------
+        # Open/Close goes to both nodes in one publish; the buzzer only to node_a.
+        r = send("all", "access", 1)
+        cid = r["id"]
+        check(wait_for(lambda: final(cid, "a") and final(cid, "b")), "both nodes answered the access button")
+        check(all(cmds[cid]["nodes"][n]["stage"] == "applied" and cmds[cid]["nodes"][n]["value"] == 1 for n in "ab"),
+              "both applied access = 1")
+        check(wait_for(lambda: reported("b", "access") is True and reported("b", "access_by") == "platform"),
+              "node_b reports access open, changed by the platform")
+        check(wait_for(lambda: any(e["text"] == "Access OPEN (by platform)" for e in events)),
+              "timeline says who opened access")
+        r = send("a", "buzzer_on", 1)
+        check(wait_for(lambda: final(r["id"], "a")) and cmds[r["id"]]["nodes"]["a"]["stage"] == "applied",
+              "node_a applied buzzer_on = 1")
+        check(wait_for(lambda: reported("a", "buzzer") == 1), "node_a reports the buzzer sounding")
+
         # --- Platform-side input checks -----------------------------------------
         check(not send("c", "x", 1)["ok"], "unknown target refused by the platform")
         check(not send("a", "near_cm", "abc")["ok"], "non-integer value refused by the platform")
@@ -192,9 +208,9 @@ def main():
             with urllib.request.urlopen(f"http://127.0.0.1:{http_port}/export/{name}.csv", timeout=5) as resp:
                 return list(csv.DictReader(io.StringIO(resp.read().decode())))
         cmd_rows, ack_rows, tel_rows, ev_rows = (table(t) for t in ("commands", "acks", "telemetry", "events"))
-        check(len(cmd_rows) == 9, f"commands table holds every command sent ({len(cmd_rows)})")
+        check(len(cmd_rows) == 11, f"commands table holds every command sent ({len(cmd_rows)})")
         check(any(x["stage"] == "rejected" and x["reason"] == "out of range" for x in ack_rows), "rejections are stored")
-        check(sum(1 for x in ack_rows if x["stage"] == "received") >= 9, "reception acks are stored")
+        check(sum(1 for x in ack_rows if x["stage"] == "received") >= 11, "reception acks are stored")
         check(len(tel_rows) > 10 and {x["node"] for x in tel_rows} == {"a", "b"}, "telemetry from both nodes is stored")
         check(any("TIMED OUT" in x["text"] for x in ev_rows), "events are stored")
         try:

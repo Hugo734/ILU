@@ -21,8 +21,10 @@ import paho.mqtt.client as mqtt
 
 # Same names and ranges as VARS in node_a/main/main.cpp and node_b/main/main.cpp.
 VARS = {
-    "a": {"buzzer_enabled": (0, 1, 1), "warmup_s": (0, 300, 60), "publish_ms": (250, 2000, 1000)},
-    "b": {"near_cm": (5, 100, 15), "repeat_ms": (200, 1000, 1000), "publish_ms": (250, 2000, 1000)},
+    "a": {"buzzer_enabled": (0, 1, 1), "warmup_s": (0, 300, 60), "publish_ms": (250, 2000, 1000),
+          "access": (0, 1, 0), "buzzer_on": (0, 1, 0)},
+    "b": {"near_cm": (5, 100, 15), "repeat_ms": (200, 1000, 1000), "publish_ms": (250, 2000, 1000),
+          "access": (0, 1, 0)},
 }
 REQUIRED = ("id", "var", "value")
 
@@ -34,6 +36,7 @@ class SimNode:
         self.t0 = time.time()
         self.extra = {}            # test hook: fields merged into the state
         self.answer = True         # test hook: False = receive commands, never apply
+        self.access_by = "switch"
         self._stop = threading.Event()
         self.c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"sim-node-{node}-{id(self)}")
         self.c.will_set(f"ilu/{node}/status", "offline", qos=1, retain=True)
@@ -72,6 +75,8 @@ class SimNode:
             self._ack(cid, var, "rejected", "out of range", self.cfg[var])
         else:
             self.cfg[var] = value
+            if var == "access":
+                self.access_by = "platform"
             self._ack(cid, var, "applied", None, value)
             self.publish_state()  # a change goes out at once, like the firmware
 
@@ -79,11 +84,17 @@ class SimNode:
         up = int((time.time() - self.t0) * 1000)
         if self.node == "a":
             s = {"node": "a", "up": up, "warm": True, "motion": False, "alarm": False, "buzzer": 0,
-                 "access": False, "peer": True, "led": "green"}
+                 "near": False, "peer": True, "led": "red"}
         else:
-            s = {"node": "b", "up": up, "cm": 40, "near": False, "access": False, "alert": False,
-                 "peer": True, "led": "red"}
+            s = {"node": "b", "up": up, "cm": 40, "near": False, "access_by": self.access_by,
+                 "alert": False, "peer": True, "led": "red"}
         s.update(self.cfg)
+        # The firmware reports access and the manual buzzer as booleans/pin state.
+        s["access"] = bool(s["access"])
+        if self.node == "a":
+            s["buzzer"] = s["buzzer_on"]
+        if s["access"]:
+            s["led"] = "blue"
         s.update(self.extra)
         return s
 
