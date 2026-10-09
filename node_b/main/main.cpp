@@ -6,44 +6,85 @@
 #include "freertos/task.h"
 
 #include "hal_b_esp32.h"
+#include "command.h"
 #include "net.h"
 #include "protocol.h"
 
 static const char *TAG = "node_b";
 
+// Lower edge of the "near" window. Below 4 cm the HC-SR04 is unreliable; the
+// upper edge is remotely controllable (near_cm).
 static const uint16_t CERCA_MIN = 4;
-static const uint16_t CERCA_MAX = 15;
 
 // node_a, read from its eFuse with esptool read_mac. Lives here and not in a
 // shared header because each node's peer is the other one.
 static const uint8_t PEER_MAC[6] = {0x78, 0x42, 0x1c, 0x68, 0x44, 0x98};
 
-// The access state is repeated, not only sent on change: a single lost
-// AccessClosed would otherwise leave node_a disarmed until the next flip.
-// node_a's lease (3 s) must stay a few multiples of this.
-static const uint32_t STATE_REPEAT_MS = 1000;
+// node_a sends a frame at least every second. Three missed ones mean the room
+// is no longer watched, and the door says so.
+static const uint32_t PEER_TIMEOUT_MS = 3000;
 
+// Same value as node_a: both LEDs blink on node_a's clock, so they blink together.
 static const uint32_t BLINK_HALF_MS = 500;
 
-// The platform gets the state every second, and at once when anything in it
-// changes, so the dashboard shows edges without waiting for the next tick.
-static const uint32_t PUBLISH_MS = 1000;
+// Remotely controllable variables. The platform addresses them by name; the
+// index is the enum value. Values reset to the defaults on reboot, and the
+// state report always carries the values actually in effect.
+enum Var { NEAR_CM, REPEAT_MS, PUBLISH_MS, ACCESS, VAR_COUNT };
+static const VarSpec VARS[VAR_COUNT] = {
+    // Upper edge of the "near" window. Must stay above CERCA_MIN.
+    {"near_cm", 5, 100},
+    // The access state is repeated, not only sent on change: a single lost
+    // AccessClosed would otherwise leave node_a disarmed until the next flip.
+    // node_a's lease is 3 s, so at most 1 s keeps three chances inside it.
+    {"repeat_ms", 200, 1000},
+    // The platform marks a node offline after 3 s without a report.
+    {"publish_ms", 250, 2000},
+    // 1 = open, 0 = closed. The physical switch writes the same variable
+    // when it is flipped, so whichever acted last wins.
+    {"access", 0, 1},
+};
+static int32_t cfg[VAR_COUNT] = {15, 1000, 1000, 0};
 
-static void send_access_state(bool open, uint16_t *seq, uint32_t now)
+static void send_event(EventId event, uint16_t *seq, uint32_t now)
 {
     Frame f{};
     f.version   = PROTOCOL_VERSION;
     f.type      = static_cast<uint8_t>(MsgType::Event);
     f.src       = 'B';
-    f.event     = static_cast<uint8_t>(open ? EventId::AccessOpen : EventId::AccessClosed);
+    f.event     = static_cast<uint8_t>(event);
     f.seq       = (*seq)++;
     f.uptime_ms = now;
 
     esp_err_t err = espnow_send_frame(f);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "TX %s seq %u: %s", open ? "AccessOpen" : "AccessClosed",
-                 (unsigned)f.seq, esp_err_to_name(err));
+        ESP_LOGE(TAG, "TX event %u seq %u: %s", (unsigned)f.event, (unsigned)f.seq, esp_err_to_name(err));
     }
+}
+
+// Applies every queued command and acknowledges its execution. Runs at the
+// top of the loop, so a new value already drives this iteration's outputs
+// and the state report that follows. Returns true if the platform set the
+// access state, so the report can say who changed it last.
+static bool handle_commands()
+{
+    bool access_set = false;
+    Command c;
+    while (command_receive(&c)) {
+        ApplyResult r = command_apply(VARS, cfg, VAR_COUNT, c);
+        bool known = r.index >= 0;
+        char ack[160];
+        if (ack_format(ack, sizeof ack, 'b', c.id, c.var, r.stage, r.reason, known, known ? cfg[r.index] : 0)) {
+            mqtt_publish_ack(ack);
+        }
+        if (r.stage == AckStage::Applied) {
+            if (r.index == ACCESS) access_set = true;
+            ESP_LOGW(TAG, "cmd %s: %s = %ld applied", c.id, c.var, (long)cfg[r.index]);
+        } else {
+            ESP_LOGW(TAG, "cmd %s: %s = %ld rejected (%s)", c.id, c.var, (long)c.value, r.reason);
+        }
+    }
+    return access_set;
 }
 
 extern "C" void app_main(void)
@@ -62,22 +103,45 @@ extern "C" void app_main(void)
     net_init('b');
     espnow_init(PEER_MAC);
 
+    // At boot the switch position is the access state; afterwards only a
+    // flip of the switch or a command changes it.
+    bool        prev_switch = hal.accessSwitchOn();
+    cfg[ACCESS]             = prev_switch ? 1 : 0;
+    const char *access_by   = "switch";
+
     bool     alert       = false;  // motion reported while access was closed
     bool     prev_access = false;
     bool     prev_cerca  = false;
-    bool     first       = true;   // forces the first state frame and log line
+    bool     first       = true;   // forces the first state frames and log line
     uint32_t last_tx     = 0;
     uint16_t seq         = 0;
     bool     have_rx_seq = false;
     uint16_t last_rx_seq = 0;
-    char     last_body[128] = "";
+    uint32_t last_peer_ms = 0;
+    bool     prev_peer   = false;
+    // node_a's uptime minus ours, refreshed by every frame from node_a. Adding
+    // it to our clock gives node_a's clock, which is what both LEDs blink on.
+    uint32_t clock_offset = 0;
+    char     last_body[256] = "";
     uint32_t last_pub    = 0;
 
     while (true) {
-        uint32_t now    = hal.nowMs();
-        uint16_t cm     = hal.distanceCm();
-        bool     access = hal.accessSwitchOn();
-        bool     cerca  = (cm >= CERCA_MIN && cm <= CERCA_MAX);
+        if (handle_commands()) access_by = "platform";
+
+        uint32_t now = hal.nowMs();
+        uint16_t cm  = hal.distanceCm();
+
+        // The switch acts on a flip, not on its position: after the platform
+        // closes access, a switch left on does not reopen it until it is
+        // flipped again.
+        bool sw = hal.accessSwitchOn();
+        if (sw != prev_switch) {
+            cfg[ACCESS] = sw ? 1 : 0;
+            access_by   = "switch";
+            prev_switch = sw;
+        }
+        bool access = cfg[ACCESS] != 0;
+        bool cerca  = (cm >= CERCA_MIN && cm <= (uint32_t)cfg[NEAR_CM]);
 
         Frame f;
         while (espnow_receive(&f)) {
@@ -87,43 +151,58 @@ extern "C" void app_main(void)
                 ESP_LOGW(TAG, "RX seq jumped %u -> %u (lost frames or node_a rebooted)",
                          (unsigned)last_rx_seq, (unsigned)f.seq);
             }
-            have_rx_seq = true;
-            last_rx_seq = f.seq;
+            have_rx_seq  = true;
+            last_rx_seq  = f.seq;
+            last_peer_ms = now;
+            clock_offset = f.uptime_ms - now;
 
+            // node_a repeats MotionStarted every second while its alarm is
+            // latched; setting the alert again is harmless.
             if (f.type == static_cast<uint8_t>(MsgType::Event) &&
-                f.event == static_cast<uint8_t>(EventId::MotionStarted)) {
-                if (access) {
-                    ESP_LOGI(TAG, "RX MotionStarted seq %u: access open, ignored", (unsigned)f.seq);
-                } else {
-                    ESP_LOGW(TAG, "RX MotionStarted seq %u: ALERT", (unsigned)f.seq);
-                    alert = true;
-                }
+                f.event == static_cast<uint8_t>(EventId::MotionStarted) && !access && !alert) {
+                ESP_LOGW(TAG, "RX MotionStarted seq %u: ALERT", (unsigned)f.seq);
+                alert = true;
             }
         }
 
-        // Opening access is how someone acknowledges the alert.
+        // have_rx_seq doubles as "node_a has been heard at least once".
+        bool peer = have_rx_seq && (now - last_peer_ms) < PEER_TIMEOUT_MS;
+        if (peer != prev_peer) {
+            ESP_LOGW(TAG, "ESP-NOW link to node_a %s", peer ? "up" : "LOST: room not watched (blue blinking)");
+            prev_peer = peer;
+        }
+
+        // Opening access, by switch or by command, is how someone acknowledges the alert.
         if (access && alert) {
-            ESP_LOGI(TAG, "alert cleared by access switch");
+            ESP_LOGI(TAG, "alert cleared: access opened by %s", access_by);
             alert = false;
         }
 
-        if (first || access != prev_access || now - last_tx >= STATE_REPEAT_MS) {
-            send_access_state(access, &seq, now);
+        // Both states travel together, on change and every repeat_ms, so
+        // node_a's LED follows this one and its access lease stays fed.
+        if (first || access != prev_access || cerca != prev_cerca || now - last_tx >= (uint32_t)cfg[REPEAT_MS]) {
+            send_event(access ? EventId::AccessOpen : EventId::AccessClosed, &seq, now);
+            send_event(cerca ? EventId::NearOn : EventId::NearOff, &seq, now);
             last_tx = now;
         }
 
-        // "red_blink" rather than the instantaneous on/off phase: the dashboard
+        // Same priority order as node_a, so both LEDs always show the same
+        // colour. "*_blink" rather than the on/off phase: the dashboard
         // animates the blink itself instead of receiving ten flips a second.
+        bool        blink_on = (((now + clock_offset) / BLINK_HALF_MS) % 2) == 0;
         const char *led;
-        if (access) {
+        if (alert) {
+            hal.setLed(blink_on ? Led::Red : Led::Off);
+            led = "red_blink";
+        } else if (!peer) {
+            hal.setLed(blink_on ? Led::Blue : Led::Off);
+            led = "blue_blink";
+        } else if (access) {
+            hal.setLed(Led::Blue);
+            led = "blue";
+        } else if (cerca) {
             hal.setLed(Led::Green);
             led = "green";
-        } else if (alert) {
-            hal.setLed(((now / BLINK_HALF_MS) % 2) ? Led::Red : Led::Off);
-            led = "red_blink";
-        } else if (cerca) {
-            hal.setLed(Led::Yellow);
-            led = "yellow";
         } else {
             hal.setLed(Led::Red);
             led = "red";
@@ -133,8 +212,8 @@ extern "C" void app_main(void)
         if (first || access != prev_access || cerca != prev_cerca) {
             uint32_t rejected, queue_full;
             espnow_rx_counters(&rejected, &queue_full);
-            ESP_LOGI(TAG, "%3u cm | access %s | %s | rx rejected %lu, queue full %lu",
-                     cm, access ? "OPEN" : "CLOSED", cerca ? "CERCA" : "-",
+            ESP_LOGI(TAG, "%3u cm | access %s (by %s) | %s | rx rejected %lu, queue full %lu",
+                     cm, access ? "OPEN" : "CLOSED", access_by, cerca ? "CERCA" : "-",
                      (unsigned long)rejected, (unsigned long)queue_full);
         }
         prev_access = access;
@@ -143,13 +222,18 @@ extern "C" void app_main(void)
 
         // Distance stays out of the change comparison: it jitters by a
         // centimetre, which would publish ten times a second. It still goes
-        // out with every periodic message.
-        char body[128];
-        snprintf(body, sizeof body, "\"near\":%s,\"access\":%s,\"alert\":%s,\"led\":\"%s\"",
-                 cerca ? "true" : "false", access ? "true" : "false",
-                 alert ? "true" : "false", led);
-        if (strcmp(body, last_body) != 0 || now - last_pub >= PUBLISH_MS) {
-            char json[192];
+        // out with every periodic message. The settings travel with the
+        // state, so after a command the platform shows the value the node is
+        // using, not the one it sent.
+        char body[256];
+        snprintf(body, sizeof body,
+                 "\"near\":%s,\"access\":%s,\"access_by\":\"%s\",\"alert\":%s,\"peer\":%s,\"led\":\"%s\","
+                 "\"near_cm\":%ld,\"repeat_ms\":%ld,\"publish_ms\":%ld",
+                 cerca ? "true" : "false", access ? "true" : "false", access_by,
+                 alert ? "true" : "false", peer ? "true" : "false", led,
+                 (long)cfg[NEAR_CM], (long)cfg[REPEAT_MS], (long)cfg[PUBLISH_MS]);
+        if (strcmp(body, last_body) != 0 || now - last_pub >= (uint32_t)cfg[PUBLISH_MS]) {
+            char json[320];
             snprintf(json, sizeof json, "{\"node\":\"b\",\"up\":%lu,\"cm\":%u,%s}",
                      (unsigned long)now, cm, body);
             mqtt_publish_state(json);

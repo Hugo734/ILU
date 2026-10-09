@@ -51,6 +51,10 @@ int main()
         check(parses(f), "AccessOpen from B is accepted");
         f.event = static_cast<uint8_t>(EventId::AccessClosed);
         check(parses(f), "AccessClosed from B is accepted");
+        f.event = static_cast<uint8_t>(EventId::NearOn);
+        check(parses(f), "NearOn from B is accepted");
+        f.event = static_cast<uint8_t>(EventId::NearOff);
+        check(parses(f), "NearOff from B is accepted");
     }
 
     // The receive buffer is not aligned; parse from an odd offset.
@@ -75,7 +79,7 @@ int main()
     f = valid_event(); f.type = 3;   check(!parses(f), "unknown type rejected");
     f = valid_event(); f.src = 'C';  check(!parses(f), "unknown src rejected");
     f = valid_event(); f.event = 0;  check(!parses(f), "event frame with no event rejected");
-    f = valid_event(); f.event = 5;  check(!parses(f), "unknown event rejected");
+    f = valid_event(); f.event = 7;  check(!parses(f), "unknown event rejected");
     f = valid_event(); f.type = static_cast<uint8_t>(MsgType::Heartbeat);
     check(!parses(f), "heartbeat carrying an event rejected");
 

@@ -1,6 +1,6 @@
 # ESP_PLATFORM is defined by ESP-IDF. Inside an IDF build this is a
 # component; outside it, a plain library that compiles with g++.
-set(CORE_SRCS protocol.cpp)
+set(CORE_SRCS protocol.cpp command.cpp)
 
 if(ESP_PLATFORM)
     idf_component_register(SRCS ${CORE_SRCS} INCLUDE_DIRS ".")

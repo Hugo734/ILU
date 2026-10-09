@@ -5,13 +5,17 @@
 constexpr uint8_t PROTOCOL_VERSION = 1;
 
 enum class MsgType : uint8_t { Heartbeat = 1, Event = 2 };
-// AccessOpen/AccessClosed are repeated every second by node_b, so a lost
-// frame is corrected by the next one instead of leaving node_a disarmed.
+// AccessOpen/AccessClosed and NearOn/NearOff are repeated every second by
+// node_b, so a lost frame is corrected by the next one instead of leaving
+// node_a disarmed or showing the wrong colour. MotionStarted is repeated by
+// node_a for as long as its alarm is latched, for the same reason.
 enum class EventId : uint8_t {
     MotionStarted = 1,
     MotionStopped = 2,
     AccessOpen    = 3,
     AccessClosed  = 4,
+    NearOn        = 5,   // someone inside node_b's near window
+    NearOff       = 6,
 };
 
 // Packed so both binaries agree on field offsets; padding would silently
@@ -22,7 +26,7 @@ struct __attribute__((packed)) Frame {
     uint8_t  type;        // MsgType
     uint8_t  src;         // 'A' or 'B'
     uint8_t  event;       // EventId, 0 for a heartbeat
-    uint16_t seq;         // detect losses and drop duplicates
+    uint16_t seq;         // gaps reveal lost frames; logged only, every message is idempotent
     uint32_t uptime_ms;
 };
 static_assert(sizeof(Frame) == 10, "Frame is a wire format; its size must not drift");

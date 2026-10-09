@@ -18,8 +18,22 @@
 
 static const char *TAG = "net";
 
+// Broker-side liveness: the broker publishes the Last Will on ilu/<id>/status
+// when it hears nothing for 1.5 x keepalive, so a dead node is announced
+// after about 7.5 s instead of the 180 s the 120 s default would give.
+static const int MQTT_KEEPALIVE_S = 5;
+
+// Room for a burst of commands while the main loop is busy. A full queue is
+// answered with a rejection, never dropped silently.
+static const UBaseType_t CMD_QUEUE_LEN = 4;
+
 static esp_mqtt_client_handle_t s_mqtt = nullptr;
+static char                     s_node_id = '?';
 static char                     s_state_topic[16];
+static char                     s_cmd_topic[16];
+static char                     s_ack_topic[16];
+static char                     s_status_topic[16];
+static QueueHandle_t            s_cmd_queue = nullptr;
 // Set in the MQTT event task, read by the app task.
 static std::atomic<bool>        s_mqtt_up{false};
 // Touched only from the default event loop task, so no lock is needed.
@@ -51,13 +65,65 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
     }
 }
 
+static void publish_ack_now(const char *id, const char *var, AckStage stage, const char *reason)
+{
+    char ack[160];
+    if (!ack_format(ack, sizeof ack, s_node_id, id, var, stage, reason, false, 0)) {
+        ESP_LOGE(TAG, "ack does not fit");
+        return;
+    }
+    // Called from the MQTT task itself. esp-mqtt guards its API with a
+    // recursive mutex, so publishing from inside the event handler is safe.
+    if (esp_mqtt_client_publish(s_mqtt, s_ack_topic, ack, 0, 1, 0) < 0) {
+        ESP_LOGW(TAG, "MQTT ack publish failed");
+    }
+}
+
+// Runs in the MQTT task. Only parsing and the reception ack happen here;
+// applying the command is the main loop's job, so all control logic stays in
+// one task, the same pattern as the ESP-NOW receive queue.
+static void on_command(const esp_mqtt_event_t *e)
+{
+    // A payload longer than the MQTT buffer arrives in pieces. No valid
+    // command is that long, so it is refused instead of reassembled.
+    if (e->data_len != e->total_data_len) {
+        if (e->current_data_offset == 0) publish_ack_now("", "", AckStage::Rejected, "command too long");
+        return;
+    }
+
+    Command c;
+    const char *err = command_parse(e->data, (size_t)e->data_len, &c);
+    if (err != nullptr) {
+        ESP_LOGW(TAG, "command rejected: %s", err);
+        publish_ack_now(c.id, c.var, AckStage::Rejected, err);
+        return;
+    }
+
+    // "received" goes out before the command is queued, so the platform can
+    // never see "applied" ahead of it.
+    publish_ack_now(c.id, c.var, AckStage::Received, nullptr);
+    if (xQueueSend(s_cmd_queue, &c, 0) != pdTRUE) {
+        publish_ack_now(c.id, c.var, AckStage::Rejected, "node busy");
+    }
+}
+
 static void on_mqtt_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
-    (void)arg; (void)base; (void)data;
+    (void)arg; (void)base;
     switch (static_cast<esp_mqtt_event_id_t>(id)) {
     case MQTT_EVENT_CONNECTED:
         s_mqtt_up = true;
         ESP_LOGI(TAG, "MQTT connected to %s", MQTT_BROKER_URI);
+        // The session is clean, so subscriptions are lost on every reconnect
+        // and must be renewed here, not once at start-up.
+        esp_mqtt_client_subscribe_single(s_mqtt, s_cmd_topic, 1);
+        esp_mqtt_client_subscribe_single(s_mqtt, "ilu/all/cmd", 1);
+        // Retained, so a platform that starts later still learns the status.
+        // It replaces the retained "offline" the Last Will may have left.
+        esp_mqtt_client_publish(s_mqtt, s_status_topic, "online", 0, 1, 1);
+        break;
+    case MQTT_EVENT_DATA:
+        on_command(static_cast<esp_mqtt_event_t *>(data));
         break;
     case MQTT_EVENT_DISCONNECTED:
         s_mqtt_up = false;
@@ -99,9 +165,26 @@ void net_init(char node_id) {
     wc.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wc));
 
-    snprintf(s_state_topic, sizeof s_state_topic, "ilu/%c/state", node_id);
+    s_node_id = node_id;
+    snprintf(s_state_topic,  sizeof s_state_topic,  "ilu/%c/state",  node_id);
+    snprintf(s_cmd_topic,    sizeof s_cmd_topic,    "ilu/%c/cmd",    node_id);
+    snprintf(s_ack_topic,    sizeof s_ack_topic,    "ilu/%c/ack",    node_id);
+    snprintf(s_status_topic, sizeof s_status_topic, "ilu/%c/status", node_id);
+
+    // Created before MQTT can start: a command arriving right after connect
+    // would otherwise be pushed to a queue that does not exist.
+    s_cmd_queue = xQueueCreate(CMD_QUEUE_LEN, sizeof(Command));
+    if (s_cmd_queue == nullptr) {
+        ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
+    }
+
     esp_mqtt_client_config_t mc = {};
     mc.broker.address.uri = MQTT_BROKER_URI;
+    mc.session.keepalive = MQTT_KEEPALIVE_S;
+    mc.session.last_will.topic  = s_status_topic;
+    mc.session.last_will.msg    = "offline";
+    mc.session.last_will.qos    = 1;
+    mc.session.last_will.retain = 1;
     s_mqtt = esp_mqtt_client_init(&mc);
     if (s_mqtt == nullptr) {
         ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
@@ -234,5 +317,19 @@ void mqtt_publish_state(const char *json)
     // message is otherwise silent by design, the next state supersedes it.
     if (esp_mqtt_client_publish(s_mqtt, s_state_topic, json, 0, 0, 0) < 0) {
         ESP_LOGW(TAG, "MQTT publish failed");
+    }
+}
+
+bool command_receive(Command *out)
+{
+    return s_cmd_queue != nullptr && xQueueReceive(s_cmd_queue, out, 0) == pdTRUE;
+}
+
+void mqtt_publish_ack(const char *json)
+{
+    if (!s_mqtt_up) return;
+    // QoS 1, unlike state: a lost ack cannot be superseded by a later one.
+    if (esp_mqtt_client_publish(s_mqtt, s_ack_topic, json, 0, 1, 0) < 0) {
+        ESP_LOGW(TAG, "MQTT ack publish failed");
     }
 }
